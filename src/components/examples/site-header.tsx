@@ -2,8 +2,6 @@
 
 import { BellIcon, PlusIcon, SearchIcon } from "lucide-react";
 import * as React from "react";
-
-import { navigation } from "@/components/examples/navigation-data";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -54,6 +52,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { navigation } from "@/lib/navigation";
 import { notify } from "@/lib/notify";
 
 /**

@@ -54,7 +54,9 @@ Already settled, no need to redo:
 
 # Where a file goes
 
-`src/components/**` is for components. A file with no JSX is not one — helpers, clients and constants go to `src/lib/`, even when only components import them. `notify` lives at `src/lib/notify.ts` for exactly this reason.
+`src/components/**` is for components. A file with no JSX is not one — helpers, clients and constants go to `src/lib/`, even when only components import them. `notify` and the navigation entries live in `src/lib/` for exactly this reason.
+
+`pnpm lint` enforces it: `scripts/check-structure.mjs` fails on any `.ts` under `src/components`. It exists because this rule was written down and broken anyway.
 
 `src/components/ui/` is written by the shadcn CLI. `src/components/shared/` is ours: the standardized pieces every screen composes from. `src/components/examples/` holds the reference screens.
 

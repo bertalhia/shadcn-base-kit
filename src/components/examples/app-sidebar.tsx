@@ -10,7 +10,6 @@ import {
   PlusIcon,
   SettingsIcon,
 } from "lucide-react";
-import { navigation, projects } from "@/components/examples/navigation-data";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Collapsible,
@@ -46,6 +45,7 @@ import {
   SidebarRail,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
+import { navigation, projects } from "@/lib/navigation";
 
 /**
  * The application sidebar, on its own.

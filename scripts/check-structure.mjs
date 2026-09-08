@@ -72,6 +72,60 @@ walk("src/lib", (file) => {
   }
 });
 
+/**
+ * React types that `@types/react` marks `@deprecated`. TypeScript reports
+ * these as editor suggestions, not build errors, so they slip in unnoticed.
+ */
+const deprecatedReactTypes = [
+  "FormEvent",
+  "MutableRefObject",
+  "LegacyRef",
+  "PropsWithRef",
+  "ClassicElement",
+  "CElement",
+  "DOMElement",
+  "ComponentElement",
+  "FunctionComponentElement",
+  "ReactComponentElement",
+  "EffectCallback",
+];
+
+const bannedPatterns = [
+  {
+    // `: any`, `as any`, `<any>` — never. A generic parameter beats all three.
+    pattern: /(:\s*any\b|\bas\s+any\b|<any[,>])/,
+    message: "uses `any`",
+  },
+  {
+    // `unknown` is fine at a boundary when it gets narrowed; casting straight
+    // through it is `any` with extra steps.
+    pattern: /\bas\s+unknown\s+as\b/,
+    message: "casts through `unknown`",
+  },
+  {
+    pattern: new RegExp(
+      `\\b(?:React\\.)?(${deprecatedReactTypes.join("|")})\\b\\s*[<(]`,
+    ),
+    message: "uses a React type that @types/react marks deprecated",
+  },
+];
+
+for (const dir of ["src"]) {
+  walk(dir, (file) => {
+    if (!/\.tsx?$/.test(file) || file.endsWith(".d.ts")) return;
+    const lines = fs.readFileSync(file, "utf8").split("\n");
+    lines.forEach((line, index) => {
+      // Comments and prose are not code.
+      if (/^\s*(\/\/|\*|\/\*)/.test(line)) return;
+      for (const { pattern, message } of bannedPatterns) {
+        if (pattern.test(line)) {
+          failures.push(`${file}:${index + 1} — ${message}: ${line.trim()}`);
+        }
+      }
+    });
+  });
+}
+
 if (failures.length) {
   console.error("Structure check failed:\n");
   for (const failure of failures) {

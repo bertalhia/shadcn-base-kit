@@ -139,16 +139,20 @@ function ToastClose({
 function ToastIcon({ type }: { type: string | undefined }) {
   let icon: React.ReactNode = null;
 
+  // Each status wears its own colour as well as its own glyph. Only `error`
+  // was coloured before, so a success and a warning arrived looking like a
+  // plain message. Shape still carries the meaning on its own, for anyone who
+  // cannot separate the hues.
   if (type === "success") {
-    icon = <CircleCheckIcon aria-hidden="true" />;
+    icon = <CircleCheckIcon className="text-success" aria-hidden="true" />;
   }
 
   if (type === "info") {
-    icon = <InfoIcon aria-hidden="true" />;
+    icon = <InfoIcon className="text-info" aria-hidden="true" />;
   }
 
   if (type === "warning") {
-    icon = <TriangleAlertIcon aria-hidden="true" />;
+    icon = <TriangleAlertIcon className="text-warning" aria-hidden="true" />;
   }
 
   if (type === "error") {

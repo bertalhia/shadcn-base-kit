@@ -330,7 +330,7 @@ function DataTablePagination<TData extends RowData>({
               }
             }}
           >
-            <SelectTrigger size="sm" className="w-[70px]">
+            <SelectTrigger size="sm" className="w-17.5">
               <SelectValue placeholder={table.state.pagination.pageSize} />
             </SelectTrigger>
             <SelectContent side="top">
@@ -342,7 +342,7 @@ function DataTablePagination<TData extends RowData>({
             </SelectContent>
           </Select>
         </div>
-        <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+        <div className="flex w-25 items-center justify-center text-sm font-medium">
           Page {table.state.pagination.pageIndex + 1} of {table.getPageCount()}
         </div>
         <div className="flex items-center space-x-2">
@@ -414,7 +414,7 @@ function DataTableViewOptions<TData extends RowData>({
         <Settings2Icon data-icon="inline-start" />
         {label}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[150px]">
+      <DropdownMenuContent align="end" className="w-37.5">
         <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {table

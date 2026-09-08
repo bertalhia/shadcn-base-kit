@@ -11,13 +11,35 @@ import { OrdersTable } from "@/components/examples/orders-table";
 import { ProductGallery } from "@/components/examples/product-gallery";
 import { ReleaseNotes } from "@/components/examples/release-notes";
 import { RevenueDashboard } from "@/components/examples/revenue-dashboard";
+import { ScenarioTabs } from "@/components/examples/scenario-tabs";
 import { SiteHeader } from "@/components/examples/site-header";
 import { SupportChat } from "@/components/examples/support-chat";
 import { LoadingState } from "@/components/shared/loading-state";
 import { PageHeader } from "@/components/shared/page-header";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+const panels = [
+  { value: "dashboard", label: "Dashboard", content: <RevenueDashboard /> },
+  { value: "orders", label: "Orders", content: <OrdersTable /> },
+  { value: "checkout", label: "Checkout", content: <CheckoutForm /> },
+  {
+    value: "settings",
+    label: "Settings",
+    content: (
+      <div className="flex flex-col gap-8">
+        <AccountSettings />
+        <Separator />
+        <BugReportForm />
+      </div>
+    ),
+  },
+  { value: "catalog", label: "Catalog", content: <ProductGallery /> },
+  { value: "booking", label: "Booking", content: <BookingPanel /> },
+  { value: "support", label: "Support", content: <SupportChat /> },
+  { value: "feedback", label: "Feedback", content: <FeedbackPlayground /> },
+  { value: "docs", label: "Docs", content: <ReleaseNotes /> },
+];
 
 /**
  * Every scenario on one page, to see them working together.
@@ -46,61 +68,9 @@ export default function Home() {
             actions={<OnboardingQuestionnaire />}
           />
 
-          <Tabs defaultValue="dashboard">
-            <TabsList>
-              <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-              <TabsTrigger value="orders">Orders</TabsTrigger>
-              <TabsTrigger value="checkout">Checkout</TabsTrigger>
-              <TabsTrigger value="settings">Settings</TabsTrigger>
-              <TabsTrigger value="catalog">Catalog</TabsTrigger>
-              <TabsTrigger value="booking">Booking</TabsTrigger>
-              <TabsTrigger value="support">Support</TabsTrigger>
-              <TabsTrigger value="feedback">Feedback</TabsTrigger>
-              <TabsTrigger value="docs">Docs</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="dashboard">
-              <RevenueDashboard />
-            </TabsContent>
-
-            <TabsContent value="orders">
-              <Suspense fallback={<LoadingState label="Loading orders" />}>
-                <OrdersTable />
-              </Suspense>
-            </TabsContent>
-
-            <TabsContent value="checkout">
-              <CheckoutForm />
-            </TabsContent>
-
-            <TabsContent value="settings">
-              <div className="flex flex-col gap-8">
-                <AccountSettings />
-                <Separator />
-                <BugReportForm />
-              </div>
-            </TabsContent>
-
-            <TabsContent value="catalog">
-              <ProductGallery />
-            </TabsContent>
-
-            <TabsContent value="booking">
-              <BookingPanel />
-            </TabsContent>
-
-            <TabsContent value="support">
-              <SupportChat />
-            </TabsContent>
-
-            <TabsContent value="feedback">
-              <FeedbackPlayground />
-            </TabsContent>
-
-            <TabsContent value="docs">
-              <ReleaseNotes />
-            </TabsContent>
-          </Tabs>
+          <Suspense fallback={<LoadingState label="Loading scenarios" />}>
+            <ScenarioTabs panels={panels} />
+          </Suspense>
         </main>
       </SidebarInset>
     </SidebarProvider>

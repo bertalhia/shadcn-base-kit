@@ -6,8 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "node scripts/check-structure.mjs && biome check",
-    "format": "biome format --write"
+    "lint": "node scripts/check-structure.mjs && node scripts/check-menu-groups.mjs && biome check",
+    "format": "biome format --write",
+    "sync-flags": "node scripts/sync-flags.mjs",
+    "predev": "node scripts/sync-flags.mjs",
+    "prebuild": "node scripts/sync-flags.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
@@ -19,6 +22,7 @@
     "class-variance-authority": "^0.7.1",
     "cmdk": "^1.1.1",
     "cn": "^0.2.6",
+    "country-flag-icons": "^1.6.20",
     "cpf-cnpj-validator": "^2.1.2",
     "date-fns": "^4.4.0",
     "embla-carousel-react": "^8.6.0",

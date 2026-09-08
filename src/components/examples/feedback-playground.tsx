@@ -1,6 +1,7 @@
 "use client";
 
 import { InboxIcon, RotateCcwIcon, Trash2Icon } from "lucide-react";
+import { parseAsBoolean, parseAsInteger, useQueryState } from "nuqs";
 import * as React from "react";
 
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -36,8 +37,16 @@ import { notify } from "@/lib/notify";
  * when something goes wrong, which is exactly when nobody has looked at them.
  */
 export function FeedbackPlayground() {
-  const [progress, setProgress] = React.useState(35);
-  const [rtl, setRtl] = React.useState(false);
+  // Progress and direction are settings someone changes and expects to find
+  // again; whether a dialog happens to be open is not.
+  const [progress, setProgress] = useQueryState(
+    "demo_progress",
+    parseAsInteger.withDefault(35),
+  );
+  const [rtl, setRtl] = useQueryState(
+    "demo_rtl",
+    parseAsBoolean.withDefault(false),
+  );
   const [dialogOpen, setDialogOpen] = React.useState(false);
 
   return (
@@ -235,7 +244,7 @@ export function FeedbackPlayground() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setProgress((value) => Math.max(0, value - 10))}
+                onClick={() => setProgress(Math.max(0, progress - 10))}
               >
                 −10
               </Button>

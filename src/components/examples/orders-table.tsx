@@ -6,10 +6,12 @@ import {
   MoreHorizontalIcon,
   SlidersHorizontalIcon,
 } from "lucide-react";
+import { parseAsString, useQueryState } from "nuqs";
 import * as React from "react";
 
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
+import { DropdownMenuSection } from "@/components/shared/menu-section";
 import { SearchInput } from "@/components/shared/search-input";
 import { Section } from "@/components/shared/section";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +28,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -244,19 +245,20 @@ const columns = columnHelper.columns([
           <MoreHorizontalIcon />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Order #{row.original.id}</DropdownMenuLabel>
-          <DropdownMenuItem
-            onClick={() => {
-              void navigator.clipboard.writeText(row.original.id);
-              notify.success("Order number copied.");
-            }}
-          >
-            Copy order number
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <ArrowUpRightIcon />
-            Open in Stripe
-          </DropdownMenuItem>
+          <DropdownMenuSection label={`Order #${row.original.id}`}>
+            <DropdownMenuItem
+              onClick={() => {
+                void navigator.clipboard.writeText(row.original.id);
+                notify.success("Order number copied.");
+              }}
+            >
+              Copy order number
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <ArrowUpRightIcon />
+              Open in Stripe
+            </DropdownMenuItem>
+          </DropdownMenuSection>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive">Refund</DropdownMenuItem>
         </DropdownMenuContent>
@@ -275,6 +277,19 @@ const columns = columnHelper.columns([
  */
 export function OrdersTable() {
   const [rows, setRows] = React.useState(orders);
+  // The toolbar's search box writes this key; reading it here is what makes
+  // the box actually narrow the list rather than just decorate the URL.
+  const [query] = useQueryState("orders_q", parseAsString.withDefault(""));
+
+  const visible = React.useMemo(() => {
+    const term = query.trim().toLowerCase();
+    if (!term) return rows;
+    return rows.filter((order) =>
+      [order.id, order.customer, order.email, order.status].some((field) =>
+        field.toLowerCase().includes(term),
+      ),
+    );
+  }, [rows, query]);
 
   return (
     <Section
@@ -294,20 +309,26 @@ export function OrdersTable() {
         />
       }
     >
-      {rows.length === 0 ? (
+      {visible.length === 0 ? (
         <EmptyState
-          title="No orders yet"
-          description="Orders show up here the moment a payment clears."
+          title={rows.length === 0 ? "No orders yet" : "Nothing matches that"}
+          description={
+            rows.length === 0
+              ? "Orders show up here the moment a payment clears."
+              : `No order matches "${query}".`
+          }
           action={
-            <Button onClick={() => setRows(orders)}>
-              Restore the demo data
-            </Button>
+            rows.length === 0 ? (
+              <Button onClick={() => setRows(orders)}>
+                Restore the demo data
+              </Button>
+            ) : null
           }
         />
       ) : (
         <DataTable
           columns={columns}
-          data={rows}
+          data={visible}
           queryPrefix="orders"
           toolbar={(table) => (
             <div className="flex flex-wrap items-center gap-2">

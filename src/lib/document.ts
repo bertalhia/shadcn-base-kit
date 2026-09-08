@@ -1,6 +1,6 @@
 import { cnpj, cpf } from "cpf-cnpj-validator";
 
-import { applyMask, applyVariablePattern, stripMask } from "@/utils/mask";
+import { applyMask, stripMask } from "@/utils/mask";
 
 export const CPF_PATTERN = "###.###.###-##";
 /**
@@ -25,16 +25,24 @@ export function formatCnpj(value: string) {
   return applyMask(stripDocument(value), CNPJ_PATTERN);
 }
 
-/** Widens from CPF to CNPJ as the value grows past eleven characters. */
-export function formatDocument(value: string) {
-  return applyVariablePattern(stripDocument(value), [
-    CPF_PATTERN,
-    CNPJ_PATTERN,
-  ]);
+/**
+ * A CPF is eleven digits; a CNPJ is fourteen characters and may contain
+ * letters. So a letter settles it on its own — waiting for the twelfth
+ * character would mean masking `12ABC…` as a CPF and dropping the letters,
+ * which is what a length-only rule does.
+ */
+export function documentKind(value: string): DocumentKind {
+  const raw = stripDocument(value);
+  if (/[A-Z]/.test(raw)) return "cnpj";
+  return raw.length > 11 ? "cnpj" : "cpf";
 }
 
-export function documentKind(value: string): DocumentKind {
-  return stripDocument(value).length > 11 ? "cnpj" : "cpf";
+/** Widens from CPF to CNPJ as soon as the value can only be a CNPJ. */
+export function formatDocument(value: string) {
+  const raw = stripDocument(value);
+  return documentKind(raw) === "cnpj"
+    ? applyMask(raw, CNPJ_PATTERN)
+    : applyMask(raw, CPF_PATTERN);
 }
 
 export function isValidCpf(value: string) {

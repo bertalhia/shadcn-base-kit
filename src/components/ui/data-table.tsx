@@ -43,13 +43,13 @@ import {
 import { useQueryStates } from "nuqs";
 import * as React from "react";
 
+import { DropdownMenuSection } from "@/components/shared/menu-section";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -415,7 +415,7 @@ function DataTableViewOptions<TData extends RowData>({
         {label}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-37.5">
-        <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+        <DropdownMenuSection label="Toggle columns" />
         <DropdownMenuSeparator />
         {table
           .getAllColumns()

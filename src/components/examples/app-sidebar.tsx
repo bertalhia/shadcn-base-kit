@@ -10,6 +10,7 @@ import {
   PlusIcon,
   SettingsIcon,
 } from "lucide-react";
+import { DropdownMenuSection } from "@/components/shared/menu-section";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Collapsible,
@@ -19,9 +20,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
@@ -77,12 +76,11 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 <ChevronsUpDownIcon className="ml-auto" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-56">
-                <DropdownMenuLabel>Workspaces</DropdownMenuLabel>
-                <DropdownMenuGroup>
+                <DropdownMenuSection label="Workspaces">
                   {projects.map((project) => (
                     <DropdownMenuItem key={project}>{project}</DropdownMenuItem>
                   ))}
-                </DropdownMenuGroup>
+                </DropdownMenuSection>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <PlusIcon />
@@ -121,7 +119,9 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 
         <Collapsible defaultOpen className="group/collapsible">
           <SidebarGroup>
-            <SidebarGroupLabel render={<CollapsibleTrigger />}>
+            {/* SidebarGroupAction sits at `right-3` in a `w-5` box, so the
+                chevron needs that much clearance or the two stack. */}
+            <SidebarGroupLabel className="pr-9" render={<CollapsibleTrigger />}>
               Projects
               <ChevronDownIcon className="ml-auto transition-transform group-data-open/collapsible:rotate-180" />
             </SidebarGroupLabel>

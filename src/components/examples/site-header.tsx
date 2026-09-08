@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import {
+  Command,
   CommandDialog,
   CommandEmpty,
   CommandGroup,
@@ -198,37 +199,39 @@ export function SiteHeader() {
       </header>
 
       <CommandDialog open={commandOpen} onOpenChange={setCommandOpen}>
-        <CommandInput placeholder="Jump to a page or run a command" />
-        <CommandList>
-          <CommandEmpty>Nothing matches that.</CommandEmpty>
-          <CommandGroup heading="Go to">
-            {navigation.map((entry) => (
+        <Command>
+          <CommandInput placeholder="Jump to a page or run a command" />
+          <CommandList>
+            <CommandEmpty>Nothing matches that.</CommandEmpty>
+            <CommandGroup heading="Go to">
+              {navigation.map((entry) => (
+                <CommandItem
+                  key={entry.title}
+                  onSelect={() => {
+                    setCommandOpen(false);
+                    notify.info(`Opened ${entry.title}.`);
+                  }}
+                >
+                  <entry.icon />
+                  {entry.title}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+            <CommandSeparator />
+            <CommandGroup heading="Actions">
               <CommandItem
-                key={entry.title}
                 onSelect={() => {
                   setCommandOpen(false);
-                  notify.info(`Opened ${entry.title}.`);
+                  notify.success("Report created.");
                 }}
               >
-                <entry.icon />
-                {entry.title}
+                <PlusIcon />
+                New report
+                <CommandShortcut>⌘N</CommandShortcut>
               </CommandItem>
-            ))}
-          </CommandGroup>
-          <CommandSeparator />
-          <CommandGroup heading="Actions">
-            <CommandItem
-              onSelect={() => {
-                setCommandOpen(false);
-                notify.success("Report created.");
-              }}
-            >
-              <PlusIcon />
-              New report
-              <CommandShortcut>⌘N</CommandShortcut>
-            </CommandItem>
-          </CommandGroup>
-        </CommandList>
+            </CommandGroup>
+          </CommandList>
+        </Command>
       </CommandDialog>
     </>
   );

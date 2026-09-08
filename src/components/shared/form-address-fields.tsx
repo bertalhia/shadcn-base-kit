@@ -9,13 +9,10 @@ import type {
 } from "react-hook-form";
 import { useWatch } from "react-hook-form";
 
+import { fetchCities, fetchCountries, fetchStates } from "@/actions/address";
+import { CountryFlag } from "@/components/shared/country-flag";
 import { FormCombobox } from "@/components/shared/form-combobox";
-import {
-  type AddressOption,
-  listCities,
-  listCountries,
-  listStates,
-} from "@/lib/address";
+import type { AddressOption } from "@/lib/address";
 
 /**
  * Which slice of the database to load. A union rather than a callback, so the
@@ -30,9 +27,10 @@ type AddressQuery =
 /**
  * Loads an option list and keeps it in step with what it depends on.
  *
- * The data is async and per-country, so a state list cannot be a constant. The
- * cancellation flag stops a slow response for a country the person already
- * moved away from overwriting the list for the one they are on now.
+ * The lists come from server actions, because the country database reads the
+ * filesystem and cannot run in a browser. The cancellation flag stops a slow
+ * response for a country the person already moved away from overwriting the
+ * list for the one they are on now.
  */
 function useAddressOptions(query: AddressQuery): {
   options: AddressOption[];
@@ -51,10 +49,10 @@ function useAddressOptions(query: AddressQuery): {
 
     const request =
       level === "countries"
-        ? listCountries()
+        ? fetchCountries()
         : level === "states"
-          ? listStates(country)
-          : listCities(country, state);
+          ? fetchStates(country)
+          : fetchCities(country, state);
 
     request
       .then((result) => {
@@ -111,6 +109,17 @@ export function FormAddressFields<TFieldValues extends FieldValues>({
     state: stateCode,
   });
 
+  // The flag rides on the option, so it appears in the list and on the
+  // selected value without the field knowing anything about countries.
+  const countryOptions = React.useMemo(
+    () =>
+      countries.options.map((option) => ({
+        ...option,
+        icon: <CountryFlag code={option.value} />,
+      })),
+    [countries.options],
+  );
+
   const empty = "" as PathValue<TFieldValues, FieldPath<TFieldValues>>;
 
   // Clear what no longer applies when the parent changes.
@@ -137,7 +146,7 @@ export function FormAddressFields<TFieldValues extends FieldValues>({
         control={control}
         name={countryName}
         label={labels?.country ?? "Country"}
-        options={countries.options}
+        options={countryOptions}
         placeholder={
           countries.loading ? "Loading countries" : "Search countries"
         }

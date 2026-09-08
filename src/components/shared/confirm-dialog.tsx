@@ -36,6 +36,11 @@ import { useIsMobile } from "@/hooks/use-mobile";
  *
  * `onConfirm` may return a promise; the dialog stays open and shows a spinner
  * until it settles, so a failed request does not silently close the dialog.
+ *
+ * `AlertDialogAction` in this style is a plain `Button` — unlike the Radix
+ * part of the same name, it does not close anything — so the open state has to
+ * be driven from the root. Passing `open` hands that to the caller; leaving it
+ * off makes the dialog own it, which is what a bare `trigger` needs.
  */
 export function ConfirmDialog({
   open,
@@ -60,16 +65,30 @@ export function ConfirmDialog({
 }) {
   const isMobile = useIsMobile();
   const [pending, setPending] = React.useState(false);
+  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(false);
+
+  const isControlled = open !== undefined;
+  const isOpen = isControlled ? open : uncontrolledOpen;
+
+  const setOpen = React.useCallback(
+    (next: boolean) => {
+      if (!isControlled) {
+        setUncontrolledOpen(next);
+      }
+      onOpenChange?.(next);
+    },
+    [isControlled, onOpenChange],
+  );
 
   const handleConfirm = React.useCallback(async () => {
     setPending(true);
     try {
       await onConfirm();
-      onOpenChange?.(false);
+      setOpen(false);
     } finally {
       setPending(false);
     }
-  }, [onConfirm, onOpenChange]);
+  }, [onConfirm, setOpen]);
 
   const confirmContent = (
     <>
@@ -80,7 +99,7 @@ export function ConfirmDialog({
 
   if (isMobile) {
     return (
-      <Drawer open={open} onOpenChange={onOpenChange}>
+      <Drawer open={isOpen} onOpenChange={setOpen}>
         {trigger ? <DrawerTrigger render={trigger} /> : null}
         <DrawerContent>
           <DrawerHeader className="text-left">
@@ -107,7 +126,7 @@ export function ConfirmDialog({
   }
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog open={isOpen} onOpenChange={setOpen}>
       {trigger ? <AlertDialogTrigger render={trigger} /> : null}
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -123,10 +142,7 @@ export function ConfirmDialog({
           <AlertDialogAction
             variant={destructive ? "destructive" : "default"}
             disabled={pending}
-            onClick={(event) => {
-              // Keep the dialog up while the work runs, so a failure can be
-              // shown here instead of after it has closed.
-              event.preventDefault();
+            onClick={() => {
               void handleConfirm();
             }}
           >

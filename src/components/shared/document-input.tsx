@@ -4,8 +4,6 @@ import * as React from "react";
 
 import { Input } from "@/components/ui/input";
 import {
-  CNPJ_PATTERN,
-  CPF_PATTERN,
   type DocumentKind,
   documentKind,
   formatCnpj,
@@ -22,6 +20,21 @@ import {
  * first. CNPJ takes letters in its first twelve positions under RFB technical
  * note 49/2024, which is why this cannot be a digits-only mask.
  */
+/**
+ * A shaped example rather than the raw mask. `###.###.###-##` shows the
+ * grouping but reads as debug output; a number shows the same thing and looks
+ * like something you could have typed.
+ */
+const EXAMPLE: Record<DocumentKind, string> = {
+  cpf: "000.000.000-00",
+  cnpj: "00.000.000/0000-00",
+};
+
+const MAX_LENGTH: Record<DocumentKind, number> = {
+  cpf: EXAMPLE.cpf.length,
+  cnpj: EXAMPLE.cnpj.length,
+};
+
 export function DocumentInput({
   value,
   onValueChange,
@@ -55,10 +68,8 @@ export function DocumentInput({
       autoComplete="off"
       value={value}
       onChange={handleChange}
-      maxLength={kind === "cpf" ? CPF_PATTERN.length : CNPJ_PATTERN.length}
-      placeholder={
-        placeholder ?? (activeKind === "cpf" ? CPF_PATTERN : CNPJ_PATTERN)
-      }
+      maxLength={MAX_LENGTH[kind === "cpf" ? "cpf" : "cnpj"]}
+      placeholder={placeholder ?? EXAMPLE[activeKind]}
       {...props}
     />
   );

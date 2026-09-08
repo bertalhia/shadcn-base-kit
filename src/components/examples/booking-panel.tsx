@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { parseAsIndex, parseAsIsoDate, useQueryState } from "nuqs";
 
 import { Section } from "@/components/shared/section";
 import { Badge } from "@/components/ui/badge";
@@ -56,10 +56,18 @@ const PAGES = 8;
  * separate pages of results, each with its own URL.
  */
 export function BookingPanel() {
-  const [date, setDate] = React.useState<Date | undefined>(
-    new Date(2026, 8, 16),
+  // Which day is being looked at, and which page of results, are both worth
+  // reaching again after a reload — and worth sending someone.
+  const [date, setDate] = useQueryState(
+    "booking_date",
+    parseAsIsoDate.withDefault(new Date(2026, 8, 16)),
   );
-  const [page, setPage] = React.useState(1);
+  // `parseAsIndex` keeps the URL one-based while the state stays zero-based.
+  const [pageIndex, setPageIndex] = useQueryState(
+    "booking_page",
+    parseAsIndex.withDefault(0),
+  );
+  const page = pageIndex + 1;
 
   return (
     <Section
@@ -70,7 +78,7 @@ export function BookingPanel() {
         <Calendar
           mode="single"
           selected={date}
-          onSelect={setDate}
+          onSelect={(next) => setDate(next ?? null)}
           defaultMonth={new Date(2026, 8, 1)}
           disabled={booked}
           modifiers={{ booked }}
@@ -128,7 +136,7 @@ export function BookingPanel() {
               <PaginationItem>
                 <PaginationPrevious
                   href="#"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  onClick={() => setPageIndex(Math.max(0, pageIndex - 1))}
                 />
               </PaginationItem>
               {[1, 2, 3].map((number) => (
@@ -136,7 +144,7 @@ export function BookingPanel() {
                   <PaginationLink
                     href="#"
                     aria-current={page === number ? "page" : undefined}
-                    onClick={() => setPage(number)}
+                    onClick={() => setPageIndex(number - 1)}
                   >
                     {number}
                   </PaginationLink>
@@ -149,7 +157,7 @@ export function BookingPanel() {
                 <PaginationLink
                   href="#"
                   aria-current={page === PAGES ? "page" : undefined}
-                  onClick={() => setPage(PAGES)}
+                  onClick={() => setPageIndex(PAGES - 1)}
                 >
                   {PAGES}
                 </PaginationLink>
@@ -157,7 +165,9 @@ export function BookingPanel() {
               <PaginationItem>
                 <PaginationNext
                   href="#"
-                  onClick={() => setPage((p) => Math.min(PAGES, p + 1))}
+                  onClick={() =>
+                    setPageIndex(Math.min(PAGES - 1, pageIndex + 1))
+                  }
                 />
               </PaginationItem>
             </PaginationContent>

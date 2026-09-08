@@ -31,7 +31,16 @@ const codeOnly = {
   "src/schemas": "Zod schemas",
   "src/constants": "static data",
   "src/hooks": "React hooks",
+  "src/actions": "server actions",
 };
+
+// No API routes. A client component that needs server-only work calls a
+// server action; that is the whole reason src/actions exists.
+if (fs.existsSync("src/app/api")) {
+  failures.push(
+    "src/app/api — this project does not use API routes. Put the server-only work in a server action under src/actions.",
+  );
+}
 
 // A file with no JSX is not a component.
 walk("src/components", (file) => {

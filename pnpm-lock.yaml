@@ -35,6 +35,9 @@ importers:
       cn:
         specifier: ^0.2.6
         version: 0.2.6
+      country-flag-icons:
+        specifier: ^1.6.20
+        version: 1.6.20
       cpf-cnpj-validator:
         specifier: ^2.1.2
         version: 2.1.2(zod@4.5.4)
@@ -1252,6 +1255,9 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
+
+  country-flag-icons@1.6.20:
+    resolution: {integrity: sha512-py8JiEKzjhYw6HPJ0L7SxLgCYim36UPRTZX43/kqGueUCZLSvnrqAiwW8HtQibur7mdkFQUkjOgdK+o/9FBtaw==}
 
   cpf-cnpj-validator@2.1.2:
     resolution: {integrity: sha512-JhU4oUhZRugvDZvWBSsQQHNHbWcjc5VW4BlmaKfChm7ddMSh/Ixv2iHM0uFNx3hN3NYgfVgVNl5MbkjNr5tgyA==}
@@ -3561,6 +3567,8 @@ snapshots:
       parse-json: 5.2.0
     optionalDependencies:
       typescript: 5.9.3
+
+  country-flag-icons@1.6.20: {}
 
   cpf-cnpj-validator@2.1.2(zod@4.5.4):
     optionalDependencies:

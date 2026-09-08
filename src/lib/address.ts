@@ -34,14 +34,18 @@ function byLabel(a: AddressOption, b: AddressOption) {
   return a.label.localeCompare(b.label);
 }
 
-/** Every country, flag first so the list scans quickly. */
+/**
+ * Every country, by name.
+ *
+ * The database carries a flag emoji per country and it is tempting to prefix
+ * the label with it — but Windows ships no flag glyphs, so the regional
+ * indicators fall back to their letter pair and every row reads "us United
+ * States". The name alone is what people scan anyway.
+ */
 export async function listCountries(): Promise<AddressOption[]> {
   const countries: ICountry[] = await getCountries();
   return countries
-    .map((country) => ({
-      value: country.iso2,
-      label: `${country.emoji} ${country.name}`,
-    }))
+    .map((country) => ({ value: country.iso2, label: country.name }))
     .sort(byLabel);
 }
 

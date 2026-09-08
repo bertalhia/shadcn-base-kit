@@ -148,10 +148,20 @@ export function SupportChat() {
                       <AvatarFallback>AL</AvatarFallback>
                     </Avatar>
                   </MessageAvatar>
-                  <MessageContent>
+                  {/* Reactions overhang the bubble's edge by design, so the
+                      docs call for extra vertical space around a bubble that
+                      has them — without it they land on the footer. */}
+                  <MessageContent className="gap-4">
                     <Bubble align="end">
                       <BubbleContent>{transcript[2].body}</BubbleContent>
-                      <BubbleReactions align="end">👍 2</BubbleReactions>
+                      <BubbleReactions
+                        align="end"
+                        role="img"
+                        aria-label="Reactions: thumbs up, 2 people"
+                      >
+                        <span>👍</span>
+                        <span>2</span>
+                      </BubbleReactions>
                     </Bubble>
                     <MessageFooter>Seen 09:17</MessageFooter>
                   </MessageContent>

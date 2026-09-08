@@ -60,17 +60,3 @@ export function applyMask(value: string, pattern: string) {
 export function maskCapacity(pattern: string) {
   return [...pattern].filter(isPlaceholder).length;
 }
-
-/**
- * Picks the first pattern the raw value still fits, so a field can widen as
- * you type — CPF up to 11 digits, then CNPJ up to 14.
- */
-export function applyVariablePattern(value: string, patterns: string[]) {
-  const sorted = [...patterns].sort(
-    (a, b) => maskCapacity(a) - maskCapacity(b),
-  );
-  const raw = stripMask(value, sorted[0]);
-  const pattern =
-    sorted.find((p) => raw.length <= maskCapacity(p)) ?? sorted.at(-1) ?? "";
-  return applyMask(raw, pattern);
-}

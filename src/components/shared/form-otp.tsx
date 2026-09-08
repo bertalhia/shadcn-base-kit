@@ -64,9 +64,11 @@ export function FormOtp<
               <React.Fragment key={offset}>
                 {blockIndex > 0 ? <InputOTPSeparator /> : null}
                 <InputOTPGroup>
-                  {Array.from({ length: size }, (_, slot) => (
-                    <InputOTPSlot key={offset + slot} index={offset + slot} />
-                  ))}
+                  {Array.from({ length: size }, (_, slot) => offset + slot).map(
+                    (index) => (
+                      <InputOTPSlot key={index} index={index} />
+                    ),
+                  )}
                 </InputOTPGroup>
               </React.Fragment>
             );

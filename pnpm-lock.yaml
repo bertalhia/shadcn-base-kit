@@ -11,6 +11,9 @@ importers:
       '@base-ui/react':
         specifier: ^1.8.0
         version: 1.8.0(@date-fns/tz@1.5.0)(@types/react@19.2.18)(date-fns@4.4.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@countrystatecity/countries':
+        specifier: ^1.0.9
+        version: 1.0.9
       '@hookform/resolvers':
         specifier: ^5.9.1
         version: 5.9.1(@standard-schema/spec@1.1.0)(ajv-formats@2.1.1(ajv@8.20.0))(ajv@8.20.0)(react-hook-form@7.87.0(react@19.2.8))(zod@4.5.4)
@@ -331,6 +334,9 @@ packages:
     engines: {node: '>=14.21.3'}
     cpu: [x64]
     os: [win32]
+
+  '@countrystatecity/countries@1.0.9':
+    resolution: {integrity: sha512-CnrvnMJS4lLZGFpEp+NuDN73DkDm7CkVE7wtTgntDNt3RQrQKgfs80VWDEIUmQpNSazlR7ipg4Qjc/xVAxFOVw==}
 
   '@date-fns/tz@1.5.0':
     resolution: {integrity: sha512-lwYN/vDPeNRULcepoE/LO2Pgx+7/RV+S9ARfbc9lr2DtGkOD7pAiruHvbR1RX3Qyf6ja47EWJDMsNK5vK08DJg==}
@@ -2833,6 +2839,8 @@ snapshots:
 
   '@biomejs/cli-win32-x64@2.4.2':
     optional: true
+
+  '@countrystatecity/countries@1.0.9': {}
 
   '@date-fns/tz@1.5.0': {}
 

@@ -26,9 +26,8 @@ export type ChoiceOption = {
 /**
  * One of several, all visible at once.
  *
- * With `variant="card"` each option becomes the selectable card from the Field
- * docs: the whole row is the label, so the hit target is the card and not just
- * the dot.
+ * Each option is the selectable card from the Field docs: the whole row is the
+ * label, so the hit target is the card and not just the dot.
  */
 export function FormRadioGroup<
   TFieldValues extends FieldValues,
@@ -40,10 +39,8 @@ export function FormRadioGroup<
   description,
   className,
   options,
-  variant = "list",
 }: BaseFieldProps<TFieldValues, TName> & {
   options: ChoiceOption[];
-  variant?: "list" | "card";
 }) {
   return (
     <Controller

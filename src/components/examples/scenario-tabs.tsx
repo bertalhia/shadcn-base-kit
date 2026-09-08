@@ -9,6 +9,8 @@ export type ScenarioPanel = {
   value: string;
   label: string;
   content: React.ReactNode;
+  /** Query keys this panel owns. Leaving it drops them. */
+  queryKeys?: string[];
 };
 
 /**
@@ -20,7 +22,13 @@ export type ScenarioPanel = {
  */
 export function ScenarioTabs({ panels }: { panels: ScenarioPanel[] }) {
   return (
-    <QueryTabs queryKey="tab" values={panels.map((panel) => panel.value)}>
+    <QueryTabs
+      queryKey="tab"
+      values={panels.map((panel) => panel.value)}
+      ownedKeys={Object.fromEntries(
+        panels.map((panel) => [panel.value, panel.queryKeys ?? []]),
+      )}
+    >
       <TabsList>
         {panels.map((panel) => (
           <TabsTrigger key={panel.value} value={panel.value}>

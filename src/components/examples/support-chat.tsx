@@ -148,10 +148,11 @@ export function SupportChat() {
                       <AvatarFallback>AL</AvatarFallback>
                     </Avatar>
                   </MessageAvatar>
-                  {/* Reactions overhang the bubble's edge by design, so the
-                      docs call for extra vertical space around a bubble that
-                      has them — without it they land on the footer. */}
-                  <MessageContent className="gap-4">
+                  {/* Reactions are absolutely positioned and hang 3/4 of
+                      their height below the bubble, taking no layout space —
+                      so whatever follows needs more clearance than that or
+                      they land on top of it. */}
+                  <MessageContent className="gap-6">
                     <Bubble align="end">
                       <BubbleContent>{transcript[2].body}</BubbleContent>
                       <BubbleReactions

@@ -21,11 +21,27 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 const panels = [
   { value: "dashboard", label: "Dashboard", content: <RevenueDashboard /> },
-  { value: "orders", label: "Orders", content: <OrdersTable /> },
+  {
+    value: "orders",
+    label: "Orders",
+    content: <OrdersTable />,
+    queryKeys: [
+      "orders_q",
+      "orders_sort",
+      "orders_filters",
+      "orders_page",
+      "orders_perPage",
+      "orders_hidden",
+      "orders_selected",
+      "orders_placed_from",
+      "orders_placed_to",
+    ],
+  },
   { value: "checkout", label: "Checkout", content: <CheckoutForm /> },
   {
     value: "settings",
     label: "Settings",
+    queryKeys: ["settings"],
     content: (
       <div className="flex flex-col gap-8">
         <AccountSettings />
@@ -35,9 +51,19 @@ const panels = [
     ),
   },
   { value: "catalog", label: "Catalog", content: <ProductGallery /> },
-  { value: "booking", label: "Booking", content: <BookingPanel /> },
+  {
+    value: "booking",
+    label: "Booking",
+    content: <BookingPanel />,
+    queryKeys: ["booking_date", "booking_page"],
+  },
   { value: "support", label: "Support", content: <SupportChat /> },
-  { value: "feedback", label: "Feedback", content: <FeedbackPlayground /> },
+  {
+    value: "feedback",
+    label: "Feedback",
+    content: <FeedbackPlayground />,
+    queryKeys: ["demo_progress", "demo_rtl"],
+  },
   { value: "docs", label: "Docs", content: <ReleaseNotes /> },
 ];
 

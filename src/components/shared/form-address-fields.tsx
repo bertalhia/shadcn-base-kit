@@ -18,36 +18,56 @@ import {
 } from "@/lib/format/address";
 
 /**
+ * Which slice of the database to load. A union rather than a callback, so the
+ * effect below depends on plain strings and stays exhaustive — a closure would
+ * change identity every render and need its dependencies silenced.
+ */
+type AddressQuery =
+  | { level: "countries" }
+  | { level: "states"; country: string }
+  | { level: "cities"; country: string; state: string };
+
+/**
  * Loads an option list and keeps it in step with what it depends on.
  *
- * The database is async and per-country, so a state list cannot be a constant.
- * `key` guards against a slow response for a country the person already moved
- * away from overwriting the list for the one they are on now.
+ * The data is async and per-country, so a state list cannot be a constant. The
+ * cancellation flag stops a slow response for a country the person already
+ * moved away from overwriting the list for the one they are on now.
  */
-function useAddressOptions(
-  load: () => Promise<AddressOption[]>,
-  key: string,
-): { options: AddressOption[]; loading: boolean } {
+function useAddressOptions(query: AddressQuery): {
+  options: AddressOption[];
+  loading: boolean;
+} {
   const [options, setOptions] = React.useState<AddressOption[]>([]);
   const [loading, setLoading] = React.useState(false);
+
+  const { level } = query;
+  const country = "country" in query ? query.country : "";
+  const state = "state" in query ? query.state : "";
 
   React.useEffect(() => {
     let current = true;
     setLoading(true);
-    load()
+
+    const request =
+      level === "countries"
+        ? listCountries()
+        : level === "states"
+          ? listStates(country)
+          : listCities(country, state);
+
+    request
       .then((result) => {
         if (current) setOptions(result);
       })
       .finally(() => {
         if (current) setLoading(false);
       });
+
     return () => {
       current = false;
     };
-    // `load` closes over `key`; depending on the key keeps the effect honest
-    // without re-running on every render that recreates the closure.
-    // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on purpose
-  }, [key]);
+  }, [level, country, state]);
 
   return { options, loading };
 }
@@ -83,15 +103,13 @@ export function FormAddressFields<TFieldValues extends FieldValues>({
   const countryCode = typeof country === "string" ? country : "";
   const stateCode = typeof state === "string" ? state : "";
 
-  const countries = useAddressOptions(listCountries, "countries");
-  const states = useAddressOptions(
-    () => listStates(countryCode),
-    `states:${countryCode}`,
-  );
-  const cities = useAddressOptions(
-    () => listCities(countryCode, stateCode),
-    `cities:${countryCode}:${stateCode}`,
-  );
+  const countries = useAddressOptions({ level: "countries" });
+  const states = useAddressOptions({ level: "states", country: countryCode });
+  const cities = useAddressOptions({
+    level: "cities",
+    country: countryCode,
+    state: stateCode,
+  });
 
   const empty = "" as PathValue<TFieldValues, FieldPath<TFieldValues>>;
 

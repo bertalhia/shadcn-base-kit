@@ -52,31 +52,85 @@ Already settled, no need to redo:
 - `data-table`, `date-picker` and `typography` have no registry item — they are composition recipes. They live in `src/components/ui/` as hand-written files, so the CLI never touches them.
 - `form` does not exist in `base-rhea`; use `field`. `sonner` was superseded by `toast`.
 
+# Where a file goes
+
+`src/components/**` is for components. A file with no JSX is not one — helpers, clients and constants go to `src/lib/`, even when only components import them. `notify` lives at `src/lib/notify.ts` for exactly this reason.
+
+`src/components/ui/` is written by the shadcn CLI. `src/components/shared/` is ours: the standardized pieces every screen composes from. `src/components/examples/` holds the reference screens.
+
+No shell components. Wrapping `{children}` in a provider-plus-chrome component is a Vite habit; in the app router that job belongs to a layout, where a route group can decide which pages get it. So the sidebar is `AppSidebar` on its own, the top bar is `SiteHeader` on its own, and `SidebarProvider` / `SidebarInset` are composed in the layout that wants them.
+
+# One library per job, wrapped once
+
+These are settled. Do not add a second library for the same job, and do not hand-roll what they already do.
+
+| Job | Library | Wrapper |
+| --- | --- | --- |
+| Phone numbers | `libphonenumber-js` | `lib/format/phone.ts` |
+| CPF / CNPJ | `cpf-cnpj-validator` | `lib/format/document.ts` |
+| Dates | `date-fns` | `lib/format/date.ts` |
+| Countries, states, cities | `@countrystatecity/countries` | `lib/format/address.ts` |
+| Money, counts, bytes | `Intl` | `lib/format/number.ts` |
+
+Screens import the wrapper, never the library. That is what makes a format decision changeable in one place.
+
+Two things worth knowing about the address data: every accessor is async, because the package ships the database locally and loads one country's file at a time rather than bundling 150,000 cities. And a state code only means something inside its country, so changing the country has to clear the state and the city — `FormAddressFields` already does.
+
+CNPJ takes letters in its first twelve positions under RFB technical note 49/2024. Any mask or validation for it has to accept them; digits-only is wrong from July 2026.
+
 # Forms: React Hook Form + Zod + Field
 
-This holds for **every** form, from a single input to a huge one. No exceptions, and no form component of our own — `base-rhea` ships no `form.tsx`, and the pattern is composition.
+This holds for **every** form, from a single input to a huge one. No exceptions.
 
 Docs: https://ui.shadcn.com/docs/forms/react-hook-form.md
-Working reference in this repo: `src/components/examples/bug-report-form.tsx`
 
-The skeleton:
+## Compose from `src/components/shared/`
 
-1. `const formSchema = z.object({ ... })`, with the error message inside each Zod rule.
-2. `useForm<z.infer<typeof formSchema>>({ resolver: zodResolver(formSchema), defaultValues })`.
-3. One `<Controller />` per field, inside a `<FieldGroup>`.
-4. Inside `render`: `<Field data-invalid={fieldState.invalid}>`, `<FieldLabel htmlFor={field.name}>`, the control carrying `aria-invalid={fieldState.invalid}`, and `{fieldState.invalid && <FieldError errors={[fieldState.error]} />}`.
-5. `<form onSubmit={form.handleSubmit(onSubmit)}>`.
+Start here rather than from `Controller`:
 
-By control type:
+```tsx
+const form = useZodForm(schema, { defaultValues });
+
+<Form form={form} onSubmit={handleSubmit}>
+  <FormSection>
+    <FormInput control={form.control} name="email" label="Email" />
+    <FormPhoneInput control={form.control} name="phone" label="Phone" />
+  </FormSection>
+  <FormActions>
+    <SubmitButton control={form.control}>Save</SubmitButton>
+  </FormActions>
+</Form>
+```
+
+`useZodForm` fixes the resolver and the types. `SubmitButton` reads its own pending state off the form, so no screen threads an `isLoading` prop down to it. There is a `Form*` component for every control — input, textarea, select, native select, combobox, checkbox, checkbox group, radio group, switch, slider, toggle group, date picker, date range picker, OTP, file, password, phone, document, currency, and the address chain.
+
+Missing one? Add it to `shared/` on top of `FormField`. Do not hand-roll a field in a screen.
+
+## What `FormField` already handles
+
+It owns the four things the Field docs ask for and that are easy to get subtly wrong per field: `data-invalid` on the wrapper, `htmlFor` tied to the control id, the description, and `FieldError` fed from React Hook Form. A new field component only renders its control:
+
+```tsx
+<FormField control={control} name={name} label={label}>
+  {({ field, id, invalid }) => (
+    <SomeControl {...field} id={id} aria-invalid={invalid} />
+  )}
+</FormField>
+```
+
+Wiring per control type, for when you write a new one:
 
 - `Input` / `Textarea`: spread `{...field}`.
-- `Select`: `value={field.value}` and `onValueChange={field.onChange}`; `aria-invalid` goes on `SelectTrigger`.
-- `Checkbox` / `Switch`: `checked={field.value}` and `onCheckedChange={field.onChange}`.
-- `RadioGroup`: `value={field.value}` and `onValueChange={field.onChange}`.
+- `Select` / `Combobox` / `RadioGroup` / `ToggleGroup`: `value` and `onValueChange`; `aria-invalid` goes on the trigger, which is what a person focuses.
+- `Checkbox` / `Switch`: `checked` and `onCheckedChange`.
 - Checkbox group: `data-slot="checkbox-group"` on the `<FieldGroup>`.
-- Dynamic list: `useFieldArray` with one `<Controller />` per item.
+- Dynamic list: `useFieldArray` with one field component per item.
+
+## Two settled decisions
 
 Leave `mode` alone. React Hook Form validates on submit, and that is the behaviour this project wants: `onBlur` and `onTouched` flag a field the moment focus leaves it, so tabbing through a form paints errors under inputs nobody has finished filling.
+
+A description line only earns its place when it says something the label cannot. `Password` + "At least 8 characters" stays — that is a rule nobody can guess, and it prevents a rejected submit. `Phone` + "So we can reach you about your order" goes; everyone knows what a phone is for. When in doubt, leave it out: extra text costs a read on every visit, a missing line costs one question, once.
 
 # State: nuqs
 

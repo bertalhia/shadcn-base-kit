@@ -32,6 +32,9 @@ importers:
       cn:
         specifier: ^0.2.6
         version: 0.2.6
+      cpf-cnpj-validator:
+        specifier: ^2.1.2
+        version: 2.1.2(zod@4.5.4)
       date-fns:
         specifier: ^4.4.0
         version: 4.4.0
@@ -41,6 +44,9 @@ importers:
       input-otp:
         specifier: ^1.5.0
         version: 1.5.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      libphonenumber-js:
+        specifier: ^1.13.12
+        version: 1.13.12
       lucide-react:
         specifier: ^1.42.0
         version: 1.42.0(react@19.2.8)
@@ -1241,6 +1247,30 @@ packages:
       typescript:
         optional: true
 
+  cpf-cnpj-validator@2.1.2:
+    resolution: {integrity: sha512-JhU4oUhZRugvDZvWBSsQQHNHbWcjc5VW4BlmaKfChm7ddMSh/Ixv2iHM0uFNx3hN3NYgfVgVNl5MbkjNr5tgyA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@angular/forms': '>=15'
+      class-validator: ^0.14.0 || ^0.15.0
+      joi: ^17.0.0
+      reflect-metadata: ^0.2.0
+      yup: ^1.0.0
+      zod: ^3.22.0 || ^4.0.0
+    peerDependenciesMeta:
+      '@angular/forms':
+        optional: true
+      class-validator:
+        optional: true
+      joi:
+        optional: true
+      reflect-metadata:
+        optional: true
+      yup:
+        optional: true
+      zod:
+        optional: true
+
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
@@ -1768,6 +1798,9 @@ packages:
   kleur@4.1.5:
     resolution: {integrity: sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==}
     engines: {node: '>=6'}
+
+  libphonenumber-js@1.13.12:
+    resolution: {integrity: sha512-uLVeV1c9OTk6qkdqnj+mpMD+ZdnZ0szVyWu58HwMmpwkHA1gCEkyjd3veZQXDnuw9KEwSRjcc9B1pS9XKIN1fA==}
 
   lightningcss-android-arm64@1.32.0:
     resolution: {integrity: sha512-YK7/ClTt4kAK0vo6w3X+Pnm0D2cf2vPHbhOXdoNti1Ga0al1P4TBZhwjATvjNwLEBCnKvjJc2jQgHXH0NEwlAg==}
@@ -3521,6 +3554,10 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.3
 
+  cpf-cnpj-validator@2.1.2(zod@4.5.4):
+    optionalDependencies:
+      zod: 4.5.4
+
   cross-spawn@7.0.6:
     dependencies:
       path-key: 3.1.1
@@ -3975,6 +4012,8 @@ snapshots:
   kleur@3.0.3: {}
 
   kleur@4.1.5: {}
+
+  libphonenumber-js@1.13.12: {}
 
   lightningcss-android-arm64@1.32.0:
     optional: true

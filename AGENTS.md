@@ -20,6 +20,16 @@ Read the primary source — the library's own docs or repo — before a blog pos
 
 Before hand-rolling a codemod, check whether the tool already exposes the thing. Two that paid off here: Tailwind ships `canonicalizeCandidates()` on the design system loaded via `__unstable__loadDesignSystem`, which is the same engine behind the editor's `suggestCanonicalClasses` warnings; TanStack Table ships its own skills under `node_modules/@tanstack/react-table/skills/`.
 
+# No filler code
+
+Three things get rejected on sight.
+
+**Re-exporting what you just imported.** `import { CountryCode } from "x"` followed by `export type { CountryCode }` adds a second name for the same thing and a second place to keep in sync. Callers import from the source. Only re-export when the module genuinely owns the abstraction.
+
+**Workarounds in place of the real fix.** If a library has an API for the job, use that API — read its docs and its types first. Reaching for a cast, a copied-out constant, a regex over something already parsed, or a second source of truth is a bug waiting on a version bump. When the real fix is out of scope, say so instead of papering over it.
+
+**`any`, and `unknown` left untreated.** No `any`. `unknown` is fine as an input boundary, but narrow it before use — a type guard, a schema parse, a discriminated union. `unknown` that reaches a call site through a cast is `any` with extra steps. Prefer a generic parameter over both.
+
 # shadcn/ui: read the docs before you write
 
 This project is on the `base-rhea` style (Base UI, not Radix). The APIs diverge from what you have memorized: `render={<Button />}` instead of `asChild`, `data-checked` instead of `data-state`, `data-icon="inline-start" | "inline-end"` on icons, `@tanstack/react-table` v9 with `tableFeatures()` and `useTable`.
@@ -66,7 +76,7 @@ By control type:
 - Checkbox group: `data-slot="checkbox-group"` on the `<FieldGroup>`.
 - Dynamic list: `useFieldArray` with one `<Controller />` per item.
 
-`useForm` validates on submit by default. Reach for `mode: "onBlur"` or `"onTouched"` when an immediate error helps more than it nags.
+Leave `mode` alone. React Hook Form validates on submit, and that is the behaviour this project wants: `onBlur` and `onTouched` flag a field the moment focus leaves it, so tabbing through a form paints errors under inputs nobody has finished filling.
 
 # State: nuqs
 

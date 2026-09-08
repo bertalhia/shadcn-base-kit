@@ -8,6 +8,18 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
+# Look it up before you write it
+
+Reach for `WebSearch` and `WebFetch` first, on anything you would otherwise answer from memory: a library's API, a config format, a CLI flag, a lint rule, a version's behaviour. Your training data lags the versions pinned here, and this project runs several of them ahead.
+
+Read the primary source — the library's own docs or repo — before a blog post about it. Most of the tooling here publishes a machine-readable index; use it:
+
+- shadcn/ui: https://ui.shadcn.com/llms.txt
+- Every docs page on ui.shadcn.com and nuqs.dev has a `.md` twin: append `.md` to the URL.
+- Next.js: the guides shipped in `node_modules/next/dist/docs/`.
+
+Before hand-rolling a codemod, check whether the tool already exposes the thing. Two that paid off here: Tailwind ships `canonicalizeCandidates()` on the design system loaded via `__unstable__loadDesignSystem`, which is the same engine behind the editor's `suggestCanonicalClasses` warnings; TanStack Table ships its own skills under `node_modules/@tanstack/react-table/skills/`.
+
 # shadcn/ui: read the docs before you write
 
 This project is on the `base-rhea` style (Base UI, not Radix). The APIs diverge from what you have memorized: `render={<Button />}` instead of `asChild`, `data-checked` instead of `data-state`, `data-icon="inline-start" | "inline-end"` on icons, `@tanstack/react-table` v9 with `tableFeatures()` and `useTable`.
@@ -75,6 +87,15 @@ What stays in `useState`:
 
 A useful line: if the link would make no sense pasted into someone else's chat, it is `useState`.
 
+## `useSearchParams` forces a Suspense boundary
+
+`useQueryState` calls `useSearchParams()` underneath. In the app router that opts the page out of static prerendering unless the caller sits inside `<Suspense>` — the build fails with *"useSearchParams() should be wrapped in a suspense boundary"*, and only at prerender time, so `next dev` will not warn you.
+
+Two consequences:
+
+- A page rendering `<DataTable />`, or any picker with a `queryKey`, wraps it in `<Suspense>`.
+- A component that only *optionally* reads the URL must not call the hook unconditionally and branch on the result — that drags the boundary into every caller. Mount the nuqs hook in its own child component and render it only when the key is there. `date-picker.tsx` does this with `DateValue` / `QueryDate` / `LocalDate`.
+
 ## Conventions
 
 - Always pass an explicit parser (`parseAsInteger`, `parseAsIsoDate`, `parseAsArrayOf`, `parseAsStringLiteral`). Without one, everything comes back as a string.
@@ -83,3 +104,20 @@ A useful line: if the link would make no sense pasted into someone else's chat, 
 - A reusable component takes its key as a prop (`queryKey`, `queryPrefix`) — never hardcode the key inside, or two instances on one page will fight over it. See `DataTable` and `DatePicker`.
 - `history: "push"` only where the change is real navigation (a tab, a modal). The `replace` default preserves the Back button.
 - A URL past ~2,000 characters is a sign that state did not belong in the URL.
+
+# Lint
+
+`src/components/ui/` is written by `shadcn add`. `biome.json` has an `overrides` entry switching off the rules that fight that vendored code (a11y roles on divs, `document.cookie` in the sidebar, `dangerouslySetInnerHTML` in the chart, array index keys, exhaustive deps). Per-line `biome-ignore` comments would not survive the next `--overwrite`; the override does.
+
+Everything else stays on, and `pnpm lint` is expected to pass clean.
+
+## Tailwind canonical classes
+
+The editor's `suggestCanonicalClasses` warnings come from Tailwind's own engine, reachable without the editor:
+
+```js
+const ds = await __unstable__loadDesignSystem(css, { base, loadStylesheet, loadModule })
+ds.canonicalizeCandidates(classes, { rem: 16, collapse: false, logical: false })
+```
+
+Keep `logical: false` — this project is `rtl: false`, so `pl-6` must not become `ps-6`. `collapse: true` is slow enough to look hung on a folder this size, and merges separate utilities, so leave it off too.

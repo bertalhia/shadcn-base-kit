@@ -1,3 +1,9 @@
+import { BugReportForm } from "@/components/examples/bug-report-form";
+
 export default function HomePage() {
-  return <div>HomePage</div>;
+  return (
+    <div>
+      <BugReportForm />
+    </div>
+  );
 }

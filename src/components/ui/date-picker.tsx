@@ -50,24 +50,48 @@ function useControllableState<T>(
   return [state, setState] as const;
 }
 
-/**
- * Same shape as `useControllableState`, with the value kept in the URL when a
- * `queryKey` is given. Without one, the date lives in React state only — which
- * is what you want inside a React Hook Form field, where the form owns it.
+/*
+ * Value source
+ *
+ * `useQueryState` calls `useSearchParams()`, which forces every page rendering
+ * it into a Suspense boundary. A picker with no `queryKey` must not pay that,
+ * so the nuqs hook lives in its own component and only mounts when there is a
+ * key — rather than being called unconditionally and branched on afterwards.
  */
-function useDateState(
-  queryKey: string | undefined,
-  value: Date | undefined,
-  defaultValue: Date | undefined,
-  onValueChange: ((date: Date | undefined) => void) | undefined,
-) {
-  const [local, setLocal] = useControllableState<Date | undefined>(
+
+type ValueSourceProps<T> = {
+  queryKey?: string;
+  value?: T;
+  defaultValue?: T;
+  onValueChange?: (value: T | undefined) => void;
+  render: (
+    value: T | undefined,
+    setValue: (next: T | undefined) => void,
+  ) => React.ReactNode;
+};
+
+function LocalDate({
+  value,
+  defaultValue,
+  onValueChange,
+  render,
+}: Omit<ValueSourceProps<Date>, "queryKey">) {
+  const [date, setDate] = useControllableState<Date | undefined>(
     value,
     defaultValue,
     onValueChange,
   );
-  const [query, setQuery] = useQueryState(queryKey ?? "date", parseAsIsoDate);
+  return render(date, setDate);
+}
 
+function QueryDate({
+  queryKey,
+  value,
+  defaultValue,
+  onValueChange,
+  render,
+}: ValueSourceProps<Date> & { queryKey: string }) {
+  const [query, setQuery] = useQueryState(queryKey, parseAsIsoDate);
   const setDate = React.useCallback(
     (next: Date | undefined) => {
       setQuery(next ?? null);
@@ -75,38 +99,42 @@ function useDateState(
     },
     [setQuery, onValueChange],
   );
-
-  if (!queryKey) {
-    return [local, setLocal] as const;
-  }
-
-  return [value ?? query ?? defaultValue, setDate] as const;
+  return render(value ?? query ?? defaultValue, setDate);
 }
 
-/** Range equivalent of `useDateState`, batched into a single URL update. */
-function useDateRangeState(
-  queryKey: string | undefined,
-  value: DateRange | undefined,
-  defaultValue: DateRange | undefined,
-  onValueChange: ((range: DateRange | undefined) => void) | undefined,
-) {
-  const [local, setLocal] = useControllableState<DateRange | undefined>(
+function DateValue({ queryKey, ...props }: ValueSourceProps<Date>) {
+  return queryKey ? (
+    <QueryDate queryKey={queryKey} {...props} />
+  ) : (
+    <LocalDate {...props} />
+  );
+}
+
+function LocalDateRange({
+  value,
+  defaultValue,
+  onValueChange,
+  render,
+}: Omit<ValueSourceProps<DateRange>, "queryKey">) {
+  const [range, setRange] = useControllableState<DateRange | undefined>(
     value,
     defaultValue,
     onValueChange,
   );
-  const [query, setQuery] = useQueryStates(
-    {
-      from: parseAsIsoDate,
-      to: parseAsIsoDate,
-    },
-    {
-      urlKeys: queryKey
-        ? { from: `${queryKey}_from`, to: `${queryKey}_to` }
-        : undefined,
-    },
-  );
+  return render(range, setRange);
+}
 
+function QueryDateRange({
+  queryKey,
+  value,
+  defaultValue,
+  onValueChange,
+  render,
+}: ValueSourceProps<DateRange> & { queryKey: string }) {
+  const [query, setQuery] = useQueryStates(
+    { from: parseAsIsoDate, to: parseAsIsoDate },
+    { urlKeys: { from: `${queryKey}_from`, to: `${queryKey}_to` } },
+  );
   const setRange = React.useCallback(
     (next: DateRange | undefined) => {
       setQuery({ from: next?.from ?? null, to: next?.to ?? null });
@@ -114,42 +142,47 @@ function useDateRangeState(
     },
     [setQuery, onValueChange],
   );
-
-  if (!queryKey) {
-    return [local, setLocal] as const;
-  }
-
   const range: DateRange | undefined = query.from
     ? { from: query.from, to: query.to ?? undefined }
     : defaultValue;
-
-  return [value ?? range, setRange] as const;
+  return render(value ?? range, setRange);
 }
 
-/**
- * Single date, in a button that opens a calendar.
- */
-function DatePicker({
-  value,
-  defaultValue,
-  onValueChange,
-  queryKey,
-  placeholder = "Pick a date",
-  dateFormat = "PPP",
-  captionLayout,
-  numberOfMonths,
-  align = "start",
-  className,
-  disabled,
-  id,
-  calendarProps,
-  ...props
-}: Omit<React.ComponentProps<typeof Button>, "value" | "defaultValue"> & {
-  value?: Date;
-  defaultValue?: Date;
-  onValueChange?: (date: Date | undefined) => void;
-  /** Persists the value in the URL under this key. */
-  queryKey?: string;
+function DateRangeValue({ queryKey, ...props }: ValueSourceProps<DateRange>) {
+  return queryKey ? (
+    <QueryDateRange queryKey={queryKey} {...props} />
+  ) : (
+    <LocalDateRange {...props} />
+  );
+}
+
+function formatLongDate(date: Date | undefined, locale = "en-US") {
+  if (!date) {
+    return "";
+  }
+
+  return date.toLocaleDateString(locale, {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function isValidDate(date: Date | undefined) {
+  if (!date) {
+    return false;
+  }
+  return !Number.isNaN(date.getTime());
+}
+
+/* Single date */
+
+type DatePickerBaseProps = Omit<
+  React.ComponentProps<typeof Button>,
+  "value" | "defaultValue"
+> & {
+  date: Date | undefined;
+  setDate: (next: Date | undefined) => void;
   placeholder?: React.ReactNode;
   dateFormat?: string;
   captionLayout?: CalendarProps["captionLayout"];
@@ -159,14 +192,23 @@ function DatePicker({
     CalendarProps,
     "mode" | "selected" | "onSelect" | "captionLayout" | "numberOfMonths"
   >;
-}) {
+};
+
+function DatePickerBase({
+  date,
+  setDate,
+  placeholder,
+  dateFormat = "PPP",
+  captionLayout,
+  numberOfMonths,
+  align = "start",
+  className,
+  disabled,
+  id,
+  calendarProps,
+  ...props
+}: DatePickerBaseProps) {
   const [open, setOpen] = React.useState(false);
-  const [date, setDate] = useDateState(
-    queryKey,
-    value,
-    defaultValue,
-    onValueChange,
-  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -208,29 +250,51 @@ function DatePicker({
 }
 
 /**
- * Start and end date, in a single button.
+ * Single date, in a button that opens a calendar.
+ *
+ * Pass `queryKey` to keep the value in the URL. Leave it off inside a React
+ * Hook Form field, where the form owns the value.
  */
-function DateRangePicker({
+function DatePicker({
   value,
   defaultValue,
   onValueChange,
   queryKey,
   placeholder = "Pick a date",
-  dateFormat = "LLL dd, y",
-  numberOfMonths = 2,
-  captionLayout,
-  align = "start",
-  className,
-  disabled,
-  id,
-  calendarProps,
   ...props
-}: Omit<React.ComponentProps<typeof Button>, "value" | "defaultValue"> & {
-  value?: DateRange;
-  defaultValue?: DateRange;
-  onValueChange?: (range: DateRange | undefined) => void;
-  /** Persists the range in the URL under `<queryKey>_from` and `<queryKey>_to`. */
+}: Omit<DatePickerBaseProps, "date" | "setDate"> & {
+  value?: Date;
+  defaultValue?: Date;
+  onValueChange?: (date: Date | undefined) => void;
+  /** Persists the value in the URL under this key. */
   queryKey?: string;
+}) {
+  return (
+    <DateValue
+      queryKey={queryKey}
+      value={value}
+      defaultValue={defaultValue}
+      onValueChange={onValueChange}
+      render={(date, setDate) => (
+        <DatePickerBase
+          date={date}
+          setDate={setDate}
+          placeholder={placeholder}
+          {...props}
+        />
+      )}
+    />
+  );
+}
+
+/* Date range */
+
+type DateRangePickerBaseProps = Omit<
+  React.ComponentProps<typeof Button>,
+  "value" | "defaultValue"
+> & {
+  range: DateRange | undefined;
+  setRange: (next: DateRange | undefined) => void;
   placeholder?: React.ReactNode;
   dateFormat?: string;
   numberOfMonths?: number;
@@ -240,14 +304,22 @@ function DateRangePicker({
     CalendarProps,
     "mode" | "selected" | "onSelect" | "captionLayout" | "numberOfMonths"
   >;
-}) {
-  const [range, setRange] = useDateRangeState(
-    queryKey,
-    value,
-    defaultValue,
-    onValueChange,
-  );
+};
 
+function DateRangePickerBase({
+  range,
+  setRange,
+  placeholder,
+  dateFormat = "LLL dd, y",
+  numberOfMonths = 2,
+  captionLayout,
+  align = "start",
+  className,
+  disabled,
+  id,
+  calendarProps,
+  ...props
+}: DateRangePickerBaseProps) {
   return (
     <Popover>
       <PopoverTrigger
@@ -294,76 +366,74 @@ function DateRangePicker({
   );
 }
 
-function formatLongDate(date: Date | undefined, locale = "en-US") {
-  if (!date) {
-    return "";
-  }
-
-  return date.toLocaleDateString(locale, {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
-}
-
-function isValidDate(date: Date | undefined) {
-  if (!date) {
-    return false;
-  }
-  return !Number.isNaN(date.getTime());
-}
-
-/**
- * Typed date, with a calendar in the input addon. Arrow Down opens the calendar.
- */
-function DatePickerInput({
+/** Start and end date, in a single button. */
+function DateRangePicker({
   value,
   defaultValue,
   onValueChange,
   queryKey,
-  placeholder = "June 01, 2025",
-  locale = "en-US",
-  triggerLabel = "Select date",
-  className,
-  disabled,
-  id,
-  calendarProps,
+  placeholder = "Pick a date",
   ...props
-}: Omit<
+}: Omit<DateRangePickerBaseProps, "range" | "setRange"> & {
+  value?: DateRange;
+  defaultValue?: DateRange;
+  onValueChange?: (range: DateRange | undefined) => void;
+  /** Persists the range in the URL under `<queryKey>_from` and `<queryKey>_to`. */
+  queryKey?: string;
+}) {
+  return (
+    <DateRangeValue
+      queryKey={queryKey}
+      value={value}
+      defaultValue={defaultValue}
+      onValueChange={onValueChange}
+      render={(range, setRange) => (
+        <DateRangePickerBase
+          range={range}
+          setRange={setRange}
+          placeholder={placeholder}
+          {...props}
+        />
+      )}
+    />
+  );
+}
+
+/* Typed date */
+
+type DatePickerInputBaseProps = Omit<
   React.ComponentProps<typeof InputGroupInput>,
   "value" | "defaultValue" | "onChange"
 > & {
-  value?: Date;
-  defaultValue?: Date;
-  onValueChange?: (date: Date | undefined) => void;
-  /** Persists the value in the URL under this key. */
-  queryKey?: string;
+  date: Date | undefined;
+  setDate: (next: Date | undefined) => void;
   locale?: string;
   triggerLabel?: string;
+  groupClassName?: string;
   calendarProps?: Omit<
     CalendarProps,
     "mode" | "selected" | "month" | "onMonthChange" | "onSelect"
   >;
-}) {
+};
+
+function DatePickerInputBase({
+  date,
+  setDate,
+  placeholder,
+  locale = "en-US",
+  triggerLabel = "Select date",
+  groupClassName,
+  disabled,
+  id,
+  calendarProps,
+  ...props
+}: DatePickerInputBaseProps) {
   const [open, setOpen] = React.useState(false);
-  const [date, setDate] = useDateState(
-    queryKey,
-    value,
-    defaultValue,
-    onValueChange,
-  );
   const [month, setMonth] = React.useState<Date | undefined>(date);
   const [text, setText] = React.useState(() => formatLongDate(date, locale));
 
-  React.useEffect(() => {
-    if (value !== undefined) {
-      setText(formatLongDate(value, locale));
-      setMonth(value);
-    }
-  }, [value, locale]);
-
   return (
-    <InputGroup className={className}>
+    <InputGroup className={groupClassName}>
       <InputGroupInput
         id={id}
         value={text}
@@ -425,48 +495,72 @@ function DatePickerInput({
   );
 }
 
-/**
- * Free text like "tomorrow" or "in 2 days", parsed with chrono-node.
- */
-function DatePickerNaturalLanguage({
+/** Typed date, with a calendar in the input addon. Arrow Down opens it. */
+function DatePickerInput({
   value,
   defaultValue,
   onValueChange,
   queryKey,
-  defaultText = "In 2 days",
-  placeholder = "Tomorrow or next week",
-  locale = "en-US",
-  triggerLabel = "Select date",
-  className,
-  disabled,
-  id,
-  calendarProps,
+  placeholder = "June 01, 2025",
   ...props
-}: Omit<
-  React.ComponentProps<typeof InputGroupInput>,
-  "value" | "defaultValue" | "onChange"
-> & {
+}: Omit<DatePickerInputBaseProps, "date" | "setDate"> & {
   value?: Date;
   defaultValue?: Date;
   onValueChange?: (date: Date | undefined) => void;
   /** Persists the value in the URL under this key. */
   queryKey?: string;
+}) {
+  return (
+    <DateValue
+      queryKey={queryKey}
+      value={value}
+      defaultValue={defaultValue}
+      onValueChange={onValueChange}
+      render={(date, setDate) => (
+        <DatePickerInputBase
+          date={date}
+          setDate={setDate}
+          placeholder={placeholder}
+          {...props}
+        />
+      )}
+    />
+  );
+}
+
+/* Natural language */
+
+type DatePickerNaturalLanguageBaseProps = Omit<
+  React.ComponentProps<typeof InputGroupInput>,
+  "value" | "defaultValue" | "onChange"
+> & {
+  date: Date | undefined;
+  setDate: (next: Date | undefined) => void;
   defaultText?: string;
   locale?: string;
   triggerLabel?: string;
+  groupClassName?: string;
   calendarProps?: Omit<CalendarProps, "mode" | "selected" | "onSelect">;
-}) {
+};
+
+function DatePickerNaturalLanguageBase({
+  date,
+  setDate,
+  defaultText = "In 2 days",
+  placeholder,
+  locale = "en-US",
+  triggerLabel = "Select date",
+  groupClassName,
+  disabled,
+  id,
+  calendarProps,
+  ...props
+}: DatePickerNaturalLanguageBaseProps) {
   const [open, setOpen] = React.useState(false);
   const [text, setText] = React.useState(defaultText);
-  const [date, setDate] = useDateState(
-    queryKey,
-    value,
-    defaultValue ?? parseDate(defaultText) ?? undefined,
-    onValueChange,
-  );
 
   return (
-    <InputGroup className={className}>
+    <InputGroup className={groupClassName}>
       <InputGroupInput
         id={id}
         value={text}
@@ -526,9 +620,42 @@ function DatePickerNaturalLanguage({
   );
 }
 
-/**
- * Native time input, sized to sit next to a `<DatePicker />`.
- */
+/** Free text like "tomorrow" or "in 2 days", parsed with chrono-node. */
+function DatePickerNaturalLanguage({
+  value,
+  defaultValue,
+  onValueChange,
+  queryKey,
+  defaultText = "In 2 days",
+  placeholder = "Tomorrow or next week",
+  ...props
+}: Omit<DatePickerNaturalLanguageBaseProps, "date" | "setDate"> & {
+  value?: Date;
+  defaultValue?: Date;
+  onValueChange?: (date: Date | undefined) => void;
+  /** Persists the value in the URL under this key. */
+  queryKey?: string;
+}) {
+  return (
+    <DateValue
+      queryKey={queryKey}
+      value={value}
+      defaultValue={defaultValue ?? parseDate(defaultText) ?? undefined}
+      onValueChange={onValueChange}
+      render={(date, setDate) => (
+        <DatePickerNaturalLanguageBase
+          date={date}
+          setDate={setDate}
+          defaultText={defaultText}
+          placeholder={placeholder}
+          {...props}
+        />
+      )}
+    />
+  );
+}
+
+/** Native time input, sized to sit next to a `<DatePicker />`. */
 function TimePicker({ className, ...props }: React.ComponentProps<"input">) {
   return (
     <Input
@@ -546,10 +673,10 @@ function TimePicker({ className, ...props }: React.ComponentProps<"input">) {
 
 export {
   DatePicker,
-  DateRangePicker,
   DatePickerInput,
   DatePickerNaturalLanguage,
-  TimePicker,
+  DateRangePicker,
   formatLongDate,
   isValidDate,
+  TimePicker,
 };

@@ -12,7 +12,7 @@ import {
   formatCpf,
   formatDocument,
   stripDocument,
-} from "@/lib/format/document";
+} from "@/lib/document";
 
 /**
  * CPF or CNPJ in one field.

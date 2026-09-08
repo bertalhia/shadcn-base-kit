@@ -54,13 +54,28 @@ Already settled, no need to redo:
 
 # Where a file goes
 
-`src/components/**` is for components. A file with no JSX is not one — helpers, clients and constants go to `src/lib/`, even when only components import them. `notify` and the navigation entries live in `src/lib/` for exactly this reason.
+Next.js is unopinionated about this — its own docs call `components` and `lib` "generalized placeholders" — so the layout below is this project's choice, not a framework rule.
 
-`pnpm lint` enforces it: `scripts/check-structure.mjs` fails on any `.ts` under `src/components`. It exists because this rule was written down and broken anyway.
+```
+src/
+  app/          routing only
+  components/
+    ui/         written by the shadcn CLI, do not hand-edit
+    shared/     ours: the standardized pieces screens compose from
+    examples/   reference screens
+  lib/          integrations: one file per external library or service
+  utils/        pure helpers, no dependencies
+  schemas/      Zod schemas
+  constants/    static data
+  hooks/        React hooks
+```
 
-`src/components/ui/` is written by the shadcn CLI. `src/components/shared/` is ours: the standardized pieces every screen composes from. `src/components/examples/` holds the reference screens.
+Two directions to keep straight:
 
-No shell components. Wrapping `{children}` in a provider-plus-chrome component is a Vite habit; in the app router that job belongs to a layout, where a route group can decide which pages get it. So the sidebar is `AppSidebar` on its own, the top bar is `SiteHeader` on its own, and `SidebarProvider` / `SidebarInset` are composed in the layout that wants them.
+- **A file with no JSX is not a component.** It goes to the folder matching what it *is*, not to whichever one imports it.
+- **`lib/` is not a dumping ground for `.ts`.** A file belongs there only if it wraps something we did not write. `date.ts` wraps date-fns, `address.ts` wraps the country database, `notify.ts` wraps the toast manager singleton that lives in `ui/toast`. A mask helper with no imports is `utils/`; a list of nav entries is `constants/`.
+
+`pnpm lint` enforces both, plus "no `.tsx` under lib, utils, schemas, constants or hooks", via `scripts/check-structure.mjs`. It exists because these rules were written down and broken anyway.
 
 # One library per job, wrapped once
 
@@ -68,11 +83,11 @@ These are settled. Do not add a second library for the same job, and do not hand
 
 | Job | Library | Wrapper |
 | --- | --- | --- |
-| Phone numbers | `libphonenumber-js` | `lib/format/phone.ts` |
-| CPF / CNPJ | `cpf-cnpj-validator` | `lib/format/document.ts` |
-| Dates | `date-fns` | `lib/format/date.ts` |
-| Countries, states, cities | `@countrystatecity/countries` | `lib/format/address.ts` |
-| Money, counts, bytes | `Intl` | `lib/format/number.ts` |
+| Phone numbers | `libphonenumber-js` | `lib/phone.ts` |
+| CPF / CNPJ | `cpf-cnpj-validator` | `lib/document.ts` |
+| Dates | `date-fns` | `lib/date.ts` |
+| Countries, states, cities | `@countrystatecity/countries` | `lib/address.ts` |
+| Money, counts, bytes | `Intl` | `utils/number.ts` |
 
 Screens import the wrapper, never the library. That is what makes a format decision changeable in one place.
 

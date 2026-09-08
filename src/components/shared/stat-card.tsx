@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { formatPercent } from "@/lib/format/number";
+import { formatPercent } from "@/utils/number";
 
 /**
  * One number, with the context that makes it mean something.

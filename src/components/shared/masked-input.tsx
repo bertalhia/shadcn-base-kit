@@ -3,7 +3,7 @@
 import * as React from "react";
 
 import { Input } from "@/components/ui/input";
-import { applyMask, isPlaceholder, stripMask } from "@/lib/format/mask";
+import { applyMask, isPlaceholder, stripMask } from "@/utils/mask";
 
 /** A digits-only mask deserves the numeric keypad; one taking letters does not. */
 function inputModeFor(

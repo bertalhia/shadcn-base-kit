@@ -31,8 +31,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { emailSchema, passwordSchema } from "@/lib/format/validators";
 import { notify } from "@/lib/notify";
+import { emailSchema, passwordSchema } from "@/schemas/fields";
 
 const timezones = [
   { value: "utc", label: "UTC" },

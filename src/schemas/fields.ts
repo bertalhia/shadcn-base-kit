@@ -1,7 +1,7 @@
 import * as z from "zod";
 
-import { isValidDocument, stripDocument } from "./document";
-import { isValidPhone, toE164 } from "./phone";
+import { isValidDocument, stripDocument } from "@/lib/document";
+import { isValidPhone, toE164 } from "@/lib/phone";
 
 /**
  * Zod schemas that already know how our masked inputs store their values, so a

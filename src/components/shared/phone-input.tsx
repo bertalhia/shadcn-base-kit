@@ -10,7 +10,7 @@ import {
   phoneMaxLength,
   phonePlaceholder,
   stripPhone,
-} from "@/lib/format/phone";
+} from "@/lib/phone";
 
 /**
  * Phone input driven by libphonenumber-js rather than a pattern.

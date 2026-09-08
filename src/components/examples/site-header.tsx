@@ -52,7 +52,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { navigation } from "@/lib/navigation";
+import { navigation } from "@/constants/navigation";
 import { notify } from "@/lib/notify";
 
 /**

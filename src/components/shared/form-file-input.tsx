@@ -16,7 +16,7 @@ import {
   AttachmentTitle,
 } from "@/components/ui/attachment";
 import { Button } from "@/components/ui/button";
-import { formatBytes } from "@/lib/format/number";
+import { formatBytes } from "@/utils/number";
 
 /**
  * Files, listed as they are picked.

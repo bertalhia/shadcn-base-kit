@@ -41,14 +41,14 @@ import {
 } from "@/components/ui/item";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import { formatCents } from "@/lib/format/number";
+import { notify } from "@/lib/notify";
 import {
   cepSchema,
   documentSchema,
   emailSchema,
   phoneSchema,
-} from "@/lib/format/validators";
-import { notify } from "@/lib/notify";
+} from "@/schemas/fields";
+import { formatCents } from "@/utils/number";
 
 const shippingOptions = [
   {

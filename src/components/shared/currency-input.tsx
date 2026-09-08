@@ -12,7 +12,7 @@ import {
   currencyInputToCents,
   DEFAULT_CURRENCY,
   DEFAULT_LOCALE,
-} from "@/lib/format/number";
+} from "@/utils/number";
 
 /** The currency's symbol on its own, for the addon. */
 function currencySymbol(locale: string, currency: string) {

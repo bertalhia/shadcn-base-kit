@@ -1,6 +1,6 @@
 import { cnpj, cpf } from "cpf-cnpj-validator";
 
-import { applyMask, applyVariablePattern, stripMask } from "./mask";
+import { applyMask, applyVariablePattern, stripMask } from "@/utils/mask";
 
 export const CPF_PATTERN = "###.###.###-##";
 /**

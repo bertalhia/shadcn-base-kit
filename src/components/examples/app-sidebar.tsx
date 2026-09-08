@@ -45,7 +45,7 @@ import {
   SidebarRail,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { navigation, projects } from "@/lib/navigation";
+import { navigation, projects } from "@/constants/navigation";
 
 /**
  * The application sidebar, on its own.

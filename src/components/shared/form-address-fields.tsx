@@ -15,7 +15,7 @@ import {
   listCities,
   listCountries,
   listStates,
-} from "@/lib/format/address";
+} from "@/lib/address";
 
 /**
  * Which slice of the database to load. A union rather than a callback, so the

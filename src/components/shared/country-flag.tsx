@@ -11,8 +11,8 @@ import type * as React from "react";
  * Not the package's React components either — a country list needs all 250, so
  * nothing tree-shakes and roughly 900 KB of SVG lands in the client bundle. As
  * files the browser fetches only the rows a person actually sees, at about a
- * kilobyte each. `scripts/sync-flags.mjs` copies them into `public/flags`
- * before dev and build.
+ * kilobyte each. They are committed under `public/flags`, copied once from
+ * `country-flag-icons`.
  *
  * `next/image` skips optimisation for a `.svg` source on its own, which is
  * what the docs recommend rather than turning on `dangerouslyAllowSVG`.

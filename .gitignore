@@ -39,6 +39,3 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-# Synced from country-flag-icons by scripts/sync-flags.mjs
-/public/flags

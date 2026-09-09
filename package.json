@@ -1,16 +1,16 @@
 {
-  "name": "portfolio-2026",
+  "name": "shadcn-base-kit",
   "version": "0.1.0",
   "private": true,
+  "description": "All 61 shadcn/ui base-rhea components, the standardized pieces built on them, and a markdown twin of every file for an AI to read.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "node scripts/check-structure.mjs && node scripts/check-menu-groups.mjs && biome check",
+    "lint": "biome check",
     "format": "biome format --write",
-    "sync-flags": "node scripts/sync-flags.mjs",
-    "predev": "node scripts/sync-flags.mjs",
-    "prebuild": "node scripts/sync-flags.mjs"
+    "docs:sync": "node scripts/generate-docs.mjs",
+    "docs:check": "node scripts/generate-docs.mjs --check"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

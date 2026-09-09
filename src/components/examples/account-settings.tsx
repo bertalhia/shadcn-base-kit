@@ -16,7 +16,7 @@ import { FormSlider } from "@/components/shared/form-slider";
 import { FormSwitch } from "@/components/shared/form-switch";
 import { FormTextarea } from "@/components/shared/form-textarea";
 import { FormToggleGroup } from "@/components/shared/form-toggle-group";
-import { QueryTabs } from "@/components/shared/query-tabs";
+import { QueryTabs, QueryTabsList } from "@/components/shared/query-tabs";
 import { Section } from "@/components/shared/section";
 import { SubmitButton } from "@/components/shared/submit-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -25,7 +25,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import { Toggle } from "@/components/ui/toggle";
 import {
   Tooltip,
@@ -125,11 +125,11 @@ export function AccountSettings() {
       values={["profile", "security", "preferences"]}
       className="w-full"
     >
-      <TabsList>
+      <QueryTabsList>
         <TabsTrigger value="profile">Profile</TabsTrigger>
         <TabsTrigger value="security">Security</TabsTrigger>
         <TabsTrigger value="preferences">Preferences</TabsTrigger>
-      </TabsList>
+      </QueryTabsList>
 
       <TabsContent value="profile">
         <Form

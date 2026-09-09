@@ -1,9 +1,9 @@
 "use client";
 
+import { cn } from "cn";
 import { parseAsString, parseAsStringLiteral, useQueryStates } from "nuqs";
 import type * as React from "react";
-
-import { Tabs } from "@/components/ui/tabs";
+import { Tabs, TabsList } from "@/components/ui/tabs";
 
 /**
  * Tabs whose active panel lives in the URL.
@@ -70,5 +70,36 @@ export function QueryTabs({
     >
       {children}
     </Tabs>
+  );
+}
+
+/**
+ * A tab strip that wraps instead of running off the screen.
+ *
+ * Nine tabs come to about 600px, which pushes a phone's whole document
+ * sideways. Scrolling the strip fixes that but leaves the last tab clipped at
+ * the edge with nothing saying it is there. Wrapping shows every tab at once
+ * and costs a second line, which is the better trade on a small screen.
+ *
+ * `h-auto` is needed because the strip is a fixed 32px tall by default, sized
+ * for exactly one row.
+ */
+export function QueryTabsList({
+  className,
+  ...props
+}: React.ComponentProps<typeof TabsList>) {
+  return (
+    <TabsList
+      className={cn(
+        // Two things fight wrapping. The strip is `h-8` under a
+        // `group-data-horizontal` variant, which a plain `h-auto` cannot
+        // override — so the second row spilled over the content below. And a
+        // trigger is `h-[calc(100%-1px)]`, the strip's height, which across
+        // two rows stretches each one over both.
+        "group-data-horizontal/tabs:h-auto max-w-full flex-wrap justify-start gap-0.5 [&>button]:h-7",
+        className,
+      )}
+      {...props}
+    />
   );
 }

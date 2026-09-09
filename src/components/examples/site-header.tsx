@@ -4,6 +4,7 @@ import { BellIcon, PlusIcon, SearchIcon } from "lucide-react";
 import * as React from "react";
 import {
   Breadcrumb,
+  BreadcrumbEllipsis,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
@@ -80,30 +81,40 @@ export function SiteHeader() {
   return (
     <>
       <header className="flex flex-col gap-3 border-b p-4">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <SidebarTrigger />
           {/* No height here on purpose: the component carries
                 `data-vertical:self-stretch`, so it fills the row. Pinning
                 `h-4` overrides that and leaves it short of the trigger it
                 sits beside. */}
           <Separator orientation="vertical" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
+          {/* The full trail wraps onto three lines on a phone. Below `sm` the
+              ancestors collapse into the ellipsis the component provides, so
+              the row stays one line and the current page keeps its name. */}
+          <Breadcrumb className="min-w-0 flex-1">
+            <BreadcrumbList className="flex-nowrap">
+              <BreadcrumbItem className="hidden sm:inline-flex">
                 <BreadcrumbLink href="#">Northwind</BreadcrumbLink>
               </BreadcrumbItem>
-              <BreadcrumbSeparator />
+              <BreadcrumbSeparator className="hidden sm:block" />
+              <BreadcrumbItem className="sm:hidden">
+                <BreadcrumbEllipsis />
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="sm:hidden" />
               <BreadcrumbItem>
                 <BreadcrumbLink href="#">Reports</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Revenue</BreadcrumbPage>
+                <BreadcrumbPage className="truncate">Revenue</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex shrink-0 items-center gap-2">
+            {/* The shortcut hint is the first thing to go when the row gets
+                tight — it is a convenience for people who use a keyboard, and
+                they are not on a phone. */}
             <Button
               variant="outline"
               size="sm"
@@ -111,7 +122,7 @@ export function SiteHeader() {
             >
               <SearchIcon />
               Search
-              <KbdGroup>
+              <KbdGroup className="hidden sm:inline-flex">
                 <Kbd>⌘</Kbd>
                 <Kbd>K</Kbd>
               </KbdGroup>

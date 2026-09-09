@@ -2,8 +2,8 @@
 
 import type * as React from "react";
 
-import { QueryTabs } from "@/components/shared/query-tabs";
-import { TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { QueryTabs, QueryTabsList } from "@/components/shared/query-tabs";
+import { TabsContent, TabsTrigger } from "@/components/ui/tabs";
 
 export type ScenarioPanel = {
   value: string;
@@ -29,13 +29,13 @@ export function ScenarioTabs({ panels }: { panels: ScenarioPanel[] }) {
         panels.map((panel) => [panel.value, panel.queryKeys ?? []]),
       )}
     >
-      <TabsList>
+      <QueryTabsList>
         {panels.map((panel) => (
           <TabsTrigger key={panel.value} value={panel.value}>
             {panel.label}
           </TabsTrigger>
         ))}
-      </TabsList>
+      </QueryTabsList>
 
       {panels.map((panel) => (
         <TabsContent key={panel.value} value={panel.value}>

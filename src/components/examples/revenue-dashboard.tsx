@@ -45,6 +45,7 @@ import {
 } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { formatCents, formatCompact } from "@/utils/number";
 
 const monthly = [
@@ -92,6 +93,85 @@ const goal = 1_000_00;
 const current = 812_00;
 
 export function RevenueDashboard() {
+  const isMobile = useIsMobile();
+
+  const revenueCard = (
+    <Card className="h-full">
+      <CardHeader>
+        <CardTitle>Revenue by month</CardTitle>
+        <CardDescription>Last 12 months, net of refunds.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ChartContainer config={revenueConfig} className="min-h-64 w-full">
+          <AreaChart accessibilityLayer data={monthly}>
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="month"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+            />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              width={56}
+              tickFormatter={(value: number) => formatCents(value)}
+            />
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  formatter={(value) => formatCents(Number(value))}
+                />
+              }
+            />
+            <Area
+              dataKey="revenue"
+              type="monotone"
+              stroke="var(--color-revenue)"
+              strokeWidth={2}
+              fill="var(--color-revenue)"
+              fillOpacity={0.12}
+            />
+          </AreaChart>
+        </ChartContainer>
+      </CardContent>
+    </Card>
+  );
+
+  const channelCard = (
+    <Card className="h-full">
+      <CardHeader>
+        <CardTitle>Revenue by channel</CardTitle>
+        <CardDescription>August, all markets.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ChartContainer config={channelConfig} className="min-h-64 w-full">
+          <BarChart accessibilityLayer data={byChannel} layout="vertical">
+            <CartesianGrid horizontal={false} />
+            <XAxis type="number" hide />
+            <YAxis
+              type="category"
+              dataKey="channel"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              width={72}
+            />
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  formatter={(value) => formatCents(Number(value))}
+                />
+              }
+            />
+            <Bar dataKey="revenue" fill="var(--color-revenue)" radius={4} />
+          </BarChart>
+        </ChartContainer>
+      </CardContent>
+    </Card>
+  );
+
   return (
     <div className="flex flex-col gap-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -116,99 +196,32 @@ export function RevenueDashboard() {
         <StatCard label="Refund rate" value="1.8%" change={-0.004} />
       </div>
 
-      <ResizablePanelGroup
-        orientation="horizontal"
-        className="min-h-96 rounded-xl border"
-      >
-        <ResizablePanel defaultSize={62}>
-          <Card className="h-full rounded-none border-0 shadow-none">
-            <CardHeader>
-              <CardTitle>Revenue by month</CardTitle>
-              <CardDescription>Last 12 months, net of refunds.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer
-                config={revenueConfig}
-                className="min-h-64 w-full"
-              >
-                <AreaChart accessibilityLayer data={monthly}>
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="month"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                  />
-                  <YAxis
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    width={56}
-                    tickFormatter={(value: number) => formatCents(value)}
-                  />
-                  <ChartTooltip
-                    content={
-                      <ChartTooltipContent
-                        formatter={(value) => formatCents(Number(value))}
-                      />
-                    }
-                  />
-                  <Area
-                    dataKey="revenue"
-                    type="monotone"
-                    stroke="var(--color-revenue)"
-                    strokeWidth={2}
-                    fill="var(--color-revenue)"
-                    fillOpacity={0.12}
-                  />
-                </AreaChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-        </ResizablePanel>
+      {/* On a phone these stack, and the split is dropped entirely: a drag
+          handle is an affordance nobody can use with a thumb, and the group's
+          fixed height would leave each chart a sliver. `minSize` keeps the
+          desktop drag from hiding either one — without it the handle happily
+          collapses a whole chart with nothing to say it is still there. */}
+      {isMobile ? (
+        <div className="flex flex-col gap-4">
+          {revenueCard}
+          {channelCard}
+        </div>
+      ) : (
+        <ResizablePanelGroup
+          orientation="horizontal"
+          className="min-h-96 rounded-xl border"
+        >
+          <ResizablePanel defaultSize={62} minSize={30}>
+            {revenueCard}
+          </ResizablePanel>
 
-        <ResizableHandle withHandle />
+          <ResizableHandle withHandle />
 
-        <ResizablePanel defaultSize={38}>
-          <Card className="h-full rounded-none border-0 shadow-none">
-            <CardHeader>
-              <CardTitle>Revenue by channel</CardTitle>
-              <CardDescription>August, all markets.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer
-                config={channelConfig}
-                className="min-h-64 w-full"
-              >
-                <BarChart accessibilityLayer data={byChannel} layout="vertical">
-                  <CartesianGrid horizontal={false} />
-                  <XAxis type="number" hide />
-                  <YAxis
-                    type="category"
-                    dataKey="channel"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    width={72}
-                  />
-                  <ChartTooltip
-                    content={
-                      <ChartTooltipContent
-                        formatter={(value) => formatCents(Number(value))}
-                      />
-                    }
-                  />
-                  <Bar
-                    dataKey="revenue"
-                    fill="var(--color-revenue)"
-                    radius={4}
-                  />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-        </ResizablePanel>
-      </ResizablePanelGroup>
+          <ResizablePanel defaultSize={38} minSize={25}>
+            {channelCard}
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <Section title="Recent activity">

@@ -38,6 +38,8 @@ This project is on the `base-rhea` style (Base UI, not Radix). The APIs diverge 
 
 Index: https://ui.shadcn.com/llms.txt
 
+**Read the changelog before you start:** https://ui.shadcn.com/docs/changelog — It is where renames, new components and migrations land, and it is the cheapest way to find out that something you are about to hand-write now ships in the registry. `cn` moving out of `lib/utils.ts` into its own package (September 2026) is the kind of thing that only shows up there.
+
 Every page has a markdown version. Prefer `.../base/<component>.md`, which serves the Base UI variant:
 
 ```
@@ -72,7 +74,7 @@ src/
 
 Two directions to keep straight:
 
-- **A file with no JSX is not a component.** It goes to the folder matching what it *is*, not to whichever one imports it.
+- **A file with no JSX is not a component.** It goes to the folder matching what it _is_, not to whichever one imports it.
 - **`lib/` is not a dumping ground for `.ts`.** A file belongs there only if it wraps something we did not write. `date.ts` wraps date-fns, `address.ts` wraps the country database, `notify.ts` wraps the toast manager singleton that lives in `ui/toast`. A mask helper with no imports is `utils/`; a list of nav entries is `constants/`.
 
 `pnpm lint` enforces both, plus "no `.tsx` under lib, utils, schemas, constants or hooks", via `scripts/check-structure.mjs`. It exists because these rules were written down and broken anyway.
@@ -81,13 +83,13 @@ Two directions to keep straight:
 
 These are settled. Do not add a second library for the same job, and do not hand-roll what they already do.
 
-| Job | Library | Wrapper |
-| --- | --- | --- |
-| Phone numbers | `libphonenumber-js` | `lib/phone.ts` |
-| CPF / CNPJ | `cpf-cnpj-validator` | `lib/document.ts` |
-| Dates | `date-fns` | `lib/date.ts` |
-| Countries, states, cities | `@countrystatecity/countries` | `lib/address.ts` |
-| Money, counts, bytes | `Intl` | `utils/number.ts` |
+| Job                       | Library                       | Wrapper           |
+| ------------------------- | ----------------------------- | ----------------- |
+| Phone numbers             | `libphonenumber-js`           | `lib/phone.ts`    |
+| CPF / CNPJ                | `cpf-cnpj-validator`          | `lib/document.ts` |
+| Dates                     | `date-fns`                    | `lib/date.ts`     |
+| Countries, states, cities | `@countrystatecity/countries` | `lib/address.ts`  |
+| Money, counts, bytes      | `Intl`                        | `utils/number.ts` |
 
 Screens import the wrapper, never the library. That is what makes a format decision changeable in one place.
 
@@ -116,7 +118,7 @@ const form = useZodForm(schema, { defaultValues });
   <FormActions>
     <SubmitButton control={form.control}>Save</SubmitButton>
   </FormActions>
-</Form>
+</Form>;
 ```
 
 `useZodForm` fixes the resolver and the types. `SubmitButton` reads its own pending state off the form, so no screen threads an `isLoading` prop down to it. There is a `Form*` component for every control — input, textarea, select, native select, combobox, checkbox, checkbox group, radio group, switch, slider, toggle group, date picker, date range picker, OTP, file, password, phone, document, currency, and the address chain.
@@ -149,6 +151,31 @@ Leave `mode` alone. React Hook Form validates on submit, and that is the behavio
 
 A description line only earns its place when it says something the label cannot. `Password` + "At least 8 characters" stays — that is a rule nobody can guess, and it prevents a rejected submit. `Phone` + "So we can reach you about your order" goes; everyone knows what a phone is for. When in doubt, leave it out: extra text costs a read on every visit, a missing line costs one question, once.
 
+# Responsive, and checked at a phone width
+
+Everything here is built for a phone as well as a desk. **No horizontal scroll on the page.** The one exception is a genuinely wide element scrolling inside its own box — a data table. The body never scrolls sideways.
+
+Validate in the browser through the Chrome MCP before calling anything done. Reading the CSS is not validation; every responsive bug in this project so far looked fine in the source.
+
+## What keeps going wrong
+
+Each of these shipped looking correct at desktop width:
+
+- **A row of things that grows.** Nine tabs come to 600px. Wrap it (`flex-wrap`) rather than scroll it — a scrolling strip leaves the last item clipped with nothing to say it is there. Watch for a fixed height on the container: `TabsList` is `h-8` under a `group-data-horizontal` variant, and a plain `h-auto` does not override a variant-scoped class, so the second row spills over whatever is below.
+- **A trigger sized as a percentage of its parent.** `h-[calc(100%-1px)]` is one row's height until the parent wraps, then every item stretches across both rows and they collide.
+- **A cluster pinned with `ml-auto`.** It runs past the edge and an ancestor's `overflow-hidden` swallows it, so nothing scrolls and the buttons are simply gone. Let the row wrap, and drop what is optional on a small screen — a keyboard shortcut hint is for people with keyboards.
+- **A breadcrumb.** The full trail wraps onto three lines. Collapse the ancestors into `BreadcrumbEllipsis` below `sm`.
+- **A side-by-side split.** Two panels leave about 190px each, which is not a chart any more. Stack them, and drop the resize handle entirely — a drag target is an affordance nobody can use with a thumb. Where a split does survive, give every panel a `minSize`, or a drag can hide one completely with nothing left to grab.
+
+## Checking it
+
+Resizing the browser window does not change `innerWidth` in this automation setup. Load the app in a 390px iframe served from `public/` instead — same-origin, so the check can read into the frame — and look for two different failures:
+
+- the document wider than the viewport, and
+- elements past the viewport that an ancestor clips, which report no overflow at all and are the worse case, because the content is invisible rather than merely awkward.
+
+Then look at the screenshots. Neither check catches overlapping elements, squashed charts, or a control too small to hit.
+
 # State: nuqs
 
 `NuqsAdapter` is already mounted in `src/app/layout.tsx`.
@@ -170,12 +197,12 @@ A useful line: if the link would make no sense pasted into someone else's chat, 
 
 ## `useSearchParams` forces a Suspense boundary
 
-`useQueryState` calls `useSearchParams()` underneath. In the app router that opts the page out of static prerendering unless the caller sits inside `<Suspense>` — the build fails with *"useSearchParams() should be wrapped in a suspense boundary"*, and only at prerender time, so `next dev` will not warn you.
+`useQueryState` calls `useSearchParams()` underneath. In the app router that opts the page out of static prerendering unless the caller sits inside `<Suspense>` — the build fails with _"useSearchParams() should be wrapped in a suspense boundary"_, and only at prerender time, so `next dev` will not warn you.
 
 Two consequences:
 
 - A page rendering `<DataTable />`, or any picker with a `queryKey`, wraps it in `<Suspense>`.
-- A component that only *optionally* reads the URL must not call the hook unconditionally and branch on the result — that drags the boundary into every caller. Mount the nuqs hook in its own child component and render it only when the key is there. `date-picker.tsx` does this with `DateValue` / `QueryDate` / `LocalDate`.
+- A component that only _optionally_ reads the URL must not call the hook unconditionally and branch on the result — that drags the boundary into every caller. Mount the nuqs hook in its own child component and render it only when the key is there. `date-picker.tsx` does this with `DateValue` / `QueryDate` / `LocalDate`.
 
 ## Conventions
 
@@ -197,8 +224,16 @@ Everything else stays on, and `pnpm lint` is expected to pass clean.
 The editor's `suggestCanonicalClasses` warnings come from Tailwind's own engine, reachable without the editor:
 
 ```js
-const ds = await __unstable__loadDesignSystem(css, { base, loadStylesheet, loadModule })
-ds.canonicalizeCandidates(classes, { rem: 16, collapse: false, logical: false })
+const ds = await __unstable__loadDesignSystem(css, {
+  base,
+  loadStylesheet,
+  loadModule,
+});
+ds.canonicalizeCandidates(classes, {
+  rem: 16,
+  collapse: false,
+  logical: false,
+});
 ```
 
 Keep `logical: false` — this project is `rtl: false`, so `pl-6` must not become `ps-6`. `collapse: true` is slow enough to look hung on a folder this size, and merges separate utilities, so leave it off too.

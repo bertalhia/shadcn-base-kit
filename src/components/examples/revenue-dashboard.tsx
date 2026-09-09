@@ -45,7 +45,7 @@ import {
 } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { formatCents, formatCompact } from "@/utils/number";
 
 const monthly = [
@@ -93,7 +93,11 @@ const goal = 1_000_00;
 const current = 812_00;
 
 export function RevenueDashboard() {
-  const isMobile = useIsMobile();
+  // Not the phone breakpoint: at 768 the sidebar still takes 256px, leaving
+  // about 512 for the split — roughly 195px for the bar chart, which is the
+  // squashed case again. The panels also fail to lay out at that size and
+  // collapse to slivers. Side by side only earns its place from `lg` up.
+  const isWide = useMediaQuery("(min-width: 1024px)");
 
   const revenueCard = (
     <Card className="h-full">
@@ -201,12 +205,7 @@ export function RevenueDashboard() {
           fixed height would leave each chart a sliver. `minSize` keeps the
           desktop drag from hiding either one — without it the handle happily
           collapses a whole chart with nothing to say it is still there. */}
-      {isMobile ? (
-        <div className="flex flex-col gap-4">
-          {revenueCard}
-          {channelCard}
-        </div>
-      ) : (
+      {isWide ? (
         <ResizablePanelGroup
           orientation="horizontal"
           className="min-h-96 rounded-xl border"
@@ -221,6 +220,11 @@ export function RevenueDashboard() {
             {channelCard}
           </ResizablePanel>
         </ResizablePanelGroup>
+      ) : (
+        <div className="flex flex-col gap-4">
+          {revenueCard}
+          {channelCard}
+        </div>
       )}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">

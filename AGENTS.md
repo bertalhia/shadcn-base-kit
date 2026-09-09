@@ -8,6 +8,19 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
+# Read the local docs before anything else
+
+`llms.txt` at the root is the index of this repository. Every file under `src/` has a markdown twin under `docs/`, carrying its exports, the real signatures, the `cva` variants, the `data-slot` hooks, and a note on when to reach for it.
+
+The order, every session:
+
+1. This file.
+2. `llms.txt`, to find the thing you need.
+3. The markdown twin of the file you are about to touch — `src/components/ui/select.tsx` is `docs/ui/select.md`.
+4. The guides in `docs/guides/` for anything crosscutting: forms, URL state, responsive, styling, copy.
+
+`docs/` is generated from the TypeScript AST by `pnpm docs:sync`, so the API sections cannot drift from the source. The prose inside each `<!-- notes -->` block is hand-written and survives a rerun. **After any change under `src/`, run `pnpm docs:sync` and commit what it writes**; `pnpm docs:check` fails if the two are out of step.
+
 # Look it up before you write it
 
 Reach for `WebSearch` and `WebFetch` first, on anything you would otherwise answer from memory: a library's API, a config format, a CLI flag, a lint rule, a version's behaviour. Your training data lags the versions pinned here, and this project runs several of them ahead.
@@ -77,7 +90,7 @@ Two directions to keep straight:
 - **A file with no JSX is not a component.** It goes to the folder matching what it _is_, not to whichever one imports it.
 - **`lib/` is not a dumping ground for `.ts`.** A file belongs there only if it wraps something we did not write. `date.ts` wraps date-fns, `address.ts` wraps the country database, `notify.ts` wraps the toast manager singleton that lives in `ui/toast`. A mask helper with no imports is `utils/`; a list of nav entries is `constants/`.
 
-`pnpm lint` enforces both, plus "no `.tsx` under lib, utils, schemas, constants or hooks", via `scripts/check-structure.mjs`. It exists because these rules were written down and broken anyway.
+There is no script enforcing this any more, which puts it on you. One tell that a file is in the wrong place: its markdown twin lands in a `docs/` section that reads oddly for what the file does.
 
 # One library per job, wrapped once
 

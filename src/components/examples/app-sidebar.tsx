@@ -11,7 +11,11 @@ import {
   SettingsIcon,
 } from "lucide-react";
 import { DropdownMenuSection } from "@/components/shared/menu-section";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { SidebarAvatarButton } from "@/components/shared/sidebar-avatar-button";
+import {
+  SidebarNavButton,
+  SidebarNavSubButton,
+} from "@/components/shared/sidebar-nav-button";
 import {
   Collapsible,
   CollapsibleContent,
@@ -36,10 +40,8 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuBadge,
-  SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
-  SidebarMenuSubButton,
   SidebarMenuSubItem,
   SidebarRail,
   SidebarSeparator,
@@ -63,18 +65,17 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
-              <DropdownMenuTrigger render={<SidebarMenuButton size="lg" />}>
-                <Avatar size="sm">
-                  <AvatarFallback>NW</AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col text-left leading-tight">
-                  <span className="font-medium">Northwind</span>
-                  <span className="text-xs text-muted-foreground">
-                    Pro plan
-                  </span>
-                </div>
-                <ChevronsUpDownIcon className="ml-auto" />
-              </DropdownMenuTrigger>
+              <DropdownMenuTrigger
+                render={
+                  <SidebarAvatarButton
+                    size="lg"
+                    fallback="NW"
+                    title="Northwind"
+                    subtitle="Pro plan"
+                    trailing={<ChevronsUpDownIcon />}
+                  />
+                }
+              />
               <DropdownMenuContent align="start" className="w-56">
                 <DropdownMenuSection label="Workspaces">
                   {projects.map((project) => (
@@ -99,13 +100,13 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenu>
               {navigation.map((entry, index) => (
                 <SidebarMenuItem key={entry.title}>
-                  <SidebarMenuButton
+                  <SidebarNavButton
                     tooltip={entry.title}
                     isActive={index === 0}
                   >
                     <entry.icon />
                     <span>{entry.title}</span>
-                  </SidebarMenuButton>
+                  </SidebarNavButton>
                   {entry.badge ? (
                     <SidebarMenuBadge>{entry.badge}</SidebarMenuBadge>
                   ) : null}
@@ -133,18 +134,16 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 <SidebarMenu>
                   {projects.map((project) => (
                     <SidebarMenuItem key={project}>
-                      <SidebarMenuButton tooltip={project}>
+                      <SidebarNavButton tooltip={project}>
                         <FolderIcon />
                         <span>{project}</span>
-                      </SidebarMenuButton>
+                      </SidebarNavButton>
                       <SidebarMenuSub>
                         <SidebarMenuSubItem>
-                          <SidebarMenuSubButton>Overview</SidebarMenuSubButton>
+                          <SidebarNavSubButton>Overview</SidebarNavSubButton>
                         </SidebarMenuSubItem>
                         <SidebarMenuSubItem>
-                          <SidebarMenuSubButton>
-                            Deployments
-                          </SidebarMenuSubButton>
+                          <SidebarNavSubButton>Deployments</SidebarNavSubButton>
                         </SidebarMenuSubItem>
                       </SidebarMenuSub>
                     </SidebarMenuItem>
@@ -159,19 +158,18 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Support">
+            <SidebarNavButton tooltip="Support">
               <LifeBuoyIcon />
               <span>Support</span>
-            </SidebarMenuButton>
+            </SidebarNavButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
             <DropdownMenu>
-              <DropdownMenuTrigger render={<SidebarMenuButton />}>
-                <Avatar size="sm">
-                  <AvatarFallback>AL</AvatarFallback>
-                </Avatar>
-                <span>Ada Lovelace</span>
-              </DropdownMenuTrigger>
+              <DropdownMenuTrigger
+                render={
+                  <SidebarAvatarButton fallback="AL" title="Ada Lovelace" />
+                }
+              />
               <DropdownMenuContent align="end" className="w-52">
                 <DropdownMenuItem>
                   <SettingsIcon />

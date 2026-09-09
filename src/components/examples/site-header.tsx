@@ -82,7 +82,11 @@ export function SiteHeader() {
       <header className="flex flex-col gap-3 border-b p-4">
         <div className="flex items-center gap-2">
           <SidebarTrigger />
-          <Separator orientation="vertical" className="h-4" />
+          {/* No height here on purpose: the component carries
+                `data-vertical:self-stretch`, so it fills the row. Pinning
+                `h-4` overrides that and leaves it short of the trigger it
+                sits beside. */}
+          <Separator orientation="vertical" />
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
